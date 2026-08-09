@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<script type="application/json" id="cowork-artifact-meta">
+{
+  "name": "Coto10 Estados Financieros",
+  "schemaVersion": 1,
+  "description": "Dashboard financiero de Coto 10 Puerta Natura con selector de mes (mayo–julio 2026): evolución de cartera vencida/saldo a favor, estatus de las 131 unidades, y el estado financiero completo de junio 2026 (KPIs, gráficas, detalle de egresos, estado de flujo de efectivo). Mayo y julio quedan marcados como pendiente/parcial hasta tener sus archivos de contabilidad completos."
+}
+</script>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Coto 10 Mediterráneo — Estados Financieros</title>
+<style>
+:root {
+  color-scheme: light;
+  --bg: #ffffff;
+  --surface: #f7f6f3;
+  --card: #f7f6f3;
+  --border: #e2e0d8;
+  --border-strong: #c9c7bc;
+  --text: #1a1a1a;
+  --text-secondary: #5f5e5a;
+  --text-muted: #8a8880;
+  --accent: #2a78d6;
+  --success: #0ca30c;
+  --success-bg: #e7f6e7;
+  --danger: #d03b3b;
+  --danger-bg: #fbe9e9;
+  --warning: #c98500;
+  --warning-bg: #fdf1dc;
+  --radius: 8px;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+  font-size: 14px;
+  line-height: 1.6;
+  padding: 20px;
+  max-width: 920px;
+  margin: 0 auto;
+}
+h1 { font-size: 20px; font-weight: 600; margin: 0 0 2px; }
+.subtitle { font-size: 13px; color: var(--text-secondary); margin: 0 0 20px; }
+.card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 1rem 1.15rem; }
+.metric-label { font-size: 12px; color: var(--text-secondary); margin: 0 0 4px; }
+.metric-value { font-size: 19px; font-weight: 600; margin: 0; }
+.grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; }
+.tabbar { display: flex; gap: 8px; margin: 18px 0 16px; flex-wrap: wrap; }
+.tab-btn {
+  background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+  padding: 8px 14px; font-size: 13px; font-weight: 500; color: var(--text-secondary); cursor: pointer;
+  display: flex; align-items: center; gap: 6px;
+}
+.tab-btn.active { background: var(--bg); border-color: var(--accent); color: var(--accent); }
+.badge { font-size: 10px; font-weight: 600; padding: 1px 6px; border-radius: 10px; text-transform: uppercase; }
+.badge-complete { background: var(--success-bg); color: var(--success); }
+.badge-partial { background: var(--warning-bg); color: var(--warning); }
+.badge-pending { background: var(--border); color: var(--text-secondary); }
+.subtabbar { display: flex; gap: 8px; margin: 14px 0; flex-wrap: wrap; }
+.subtab-btn {
+  background: transparent; border: 1px solid var(--border); border-radius: var(--radius);
+  padding: 6px 12px; font-size: 12px; color: var(--text-secondary); cursor: pointer;
+}
+.subtab-btn.active { background: var(--surface); border-color: var(--border-strong); color: var(--text); font-weight: 500; }
+button.action {
+  background: var(--bg); border: 1px solid var(--border-strong); border-radius: var(--radius);
+  padding: 8px 14px; font-size: 13px; color: var(--text); cursor: pointer;
+}
+button.action:hover { background: var(--surface); }
+.pending-panel { background: var(--warning-bg); border: 1px solid #f0d9a8; border-radius: 12px; padding: 1rem 1.15rem; margin-top: 10px; }
+.note { font-size: 12px; color: var(--text-muted); }
+table { width: 100%; border-collapse: collapse; }
+th { text-align: left; padding: 6px; font-size: 11px; color: var(--text-muted); border-bottom: 1px solid var(--border); font-weight: 500; }
+td { padding: 5px 6px; font-size: 12px; border-bottom: 1px solid var(--border); }
+.section-label { font-size: 12px; color: var(--text-secondary); margin: 18px 0 8px; }
+.row-line { display: flex; justify-content: space-between; padding: 4px 0; font-size: 13px; }
+.section-bar { display: flex; justify-content: space-between; background: var(--surface); padding: 6px 8px; margin-top: 10px; border-radius: 4px; font-weight: 500; font-size: 13px; }
+.highlight-bar { display: flex; justify-content: space-between; background: var(--success-bg); padding: 8px; margin-top: 14px; border-radius: 4px; font-weight: 600; font-size: 13px; color: #06620f; }
+.legend { display: flex; flex-wrap: wrap; gap: 14px; margin-bottom: 10px; font-size: 12px; color: var(--text-secondary); }
+.legend span.dot { width: 10px; height: 10px; border-radius: 2px; display: inline-block; margin-right: 5px; }
+</style>
+</head>
+<body>
+
+<h1>Coto 10 Mediterráneo — Puerta Natura</h1>
+<p class="subtitle">Estados financieros y cobranza. Selecciona un mes para ver su detalle.</p>
+
+<div class="section-label">Evolución de saldos por mes (Resumen de Cobranza — mayo → julio 2026)</div>
+<div style="position:relative;height:220px;">
+  <canvas id="chartEvolucion"></canvas>
+</div>
+
+<div class="grid" style="grid-template-columns:1.1fr 1fr;margin-top:20px;align-items:start;">
+  <div>
+    <div class="section-label" style="margin-top:0;">Estatus de las 131 unidades (corte 31-jul-2026)</div>
+    <div style="position:relative;height:190px;">
+      <canvas id="chartEstatus"></canvas>
+    </div>
+  </div>
+  <div id="estatusLegend" style="margin-top:26px;"></div>
+</div>
+
+<div class="tabbar" id="monthTabs">
+  <button class="tab-btn" data-month="resumen">Resumen general</button>
+  <button class="tab-btn" data-month="todo">Todo <span class="badge badge-partial">Promedio</span></button>
+  <button class="tab-btn" data-month="balance">Balance general</button>
+  <button class="tab-btn" data-month="junio">Junio 2026 <span class="badge badge-complete">Completo</span></button>
+  <button class="tab-btn" data-month="julio">Julio 2026 <span class="badge badge-partial">Parcial</span></button>
+</div>
+
+<div id="panelResumenGeneral"></div>
+<div id="panelTodo"></div>
+<div id="panelBalance"></div>
+<div id="panelJunio"></div>
+<div id="panelJulio"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.0/dist/chart.umd.js" integrity="sha384-iU8HYtnGQ8Cy4zl7gbNMOhsDTTKX02BTXptVP/vqAWIaTfM7isw76iyZCsjL2eVi" crossorigin="anonymous"></script>
+<script>
+const fmt = (v) => (v < 0 ? '-$' : '$') + Math.abs(Math.round(v)).toLocaleString('es-MX');
+const fmt2 = (v) => (v < 0 ? '-$' : '$') + Math.abs(v).toLocaleString('es-MX', {minimumFractionDigits:2, maximumFractionDigits:2});
+const pct = (v) => Math.round(v * 10) / 10;
+const cove = ['#2a78d6','#eb6834','#1baf7a','#eda100','#e87ba4','#008300','#4a3aa7','#e34948'];
+
+function metricCard(label, value, color){
+  return '<div class="card"><p class="metric-label">' + label + '</p>' +
+    '<p class="metric-value" style="' + (color ? 'color:'+color+';' : '') + '">' + fmt(value) + '</p></div>';
+}
+const rowLine = (label, value, indent) => '<div class="row-line" style="padding-left:' + (indent||0) + 'px;"><span style="color:var(--text-secondary);">' + label + '</span><span>' + fmt2(value) + '</span></div>';
+const sectionBar = (label, value) => '<div class="section-bar"><span>' + label + '</span><span>' + fmt2(value) + '</span></div>';
+const highlightBar = (label, value) => '<div class="highlight-bar"><span>' + label + '</span><span>' + fmt2(value) + '</span></div>';
+
+new Chart(document.getElementById('chartEvolucion'), {
+  type: 'line',
+  data: {
+    labels: ['Mayo 2026 (30-may)', 'Junio 2026 (30-jun)', 'Julio 2026 (31-jul)'],
+    datasets: [
+      { label: 'Cartera vencida (adeudo)', data: [52124.95, 56222.45, 55448.95], borderColor: '#d03b3b', backgroundColor: '#d03b3b', tension: 0.15, borderWidth: 2 },
+      { label: 'Saldo a favor (adelantos)', data: [30757.65, 42705.15, 46929.65], borderColor: '#0ca30c', backgroundColor: '#0ca30c', tension: 0.15, borderWidth: 2 },
+      { label: 'Posición neta pendiente de cobro', data: [21367.30, 13517.30, 8519.30], borderColor: '#2a78d6', backgroundColor: '#2a78d6', tension: 0.15, borderWidth: 2, borderDash: [5,3] }
+    ]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 11 } } },
+      tooltip: { callbacks: { label: (ctx) => ctx.dataset.label + ': ' + fmt2(ctx.parsed.y) } } },
+    scales: {
+      y: { ticks: { callback: (v) => fmt(v), font: { size: 11 } }, grid: { color: '#e2e0d8' } },
+      x: { ticks: { font: { size: 11 } }, grid: { display: false } }
+    }
+  }
+});
+
+(function(){
+  const el = document.getElementById('panelJulio');
+  el.innerHTML = '<div class="grid" style="margin-top:14px;">' +
+    metricCard('Cartera vencida (adeudo)', 55448.95, '#d03b3b') +
+    metricCard('Saldo a favor (adelantos)', 46929.65, '#0ca30c') +
+    metricCard('Posición neta pendiente', 8519.30) +
+    '</div>' +
+    '<div class="pending-panel">' +
+    '<p style="margin:0 0 8px;font-weight:600;font-size:13px;">Estado de resultados de julio 2026: captura parcial</p>' +
+    '<p style="margin:0 0 10px;font-size:13px;color:var(--text-secondary);">El archivo "PUERTA NATURA JULIO 26" ya trae la dispersión de la segunda quincena y los gastos menores, pero falta la primera quincena y el resto de categorías (mantenimiento, administración, CFE) para cerrar el mes.</p>' +
+    '<p style="margin:0;font-size:12px;color:var(--text-muted);">Avísale a Claude en el chat en cuanto tengas el cierre completo de julio, y lo captura igual que junio.</p>' +
+    '</div>';
+})();
+
+(function(){
+  const el = document.getElementById('panelResumenGeneral');
+  el.innerHTML = '<div class="grid" style="margin-top:14px;">' +
+    metricCard('Cartera vencida (más reciente, 31-jul)', 55448.95, '#d03b3b') +
+    metricCard('Saldo a favor (más reciente, 31-jul)', 46929.65, '#0ca30c') +
+    metricCard('Posición neta (más reciente, 31-jul)', 8519.30) +
+    metricCard('Egresos (último cierre, junio)', 137766.37) +
+    metricCard('Banco final (último cierre, junio)', 367108.73) +
+    metricCard('Disponible real (último cierre, junio)', 324403.58) +
+    '</div>' +
+    '<p class="note" style="margin-top:12px;">Último estado de resultados cerrado: junio 2026. Último corte de cobranza disponible: 31 de julio 2026 (egresos de julio aún en captura parcial). La evolución de saldos y el estatus de las 131 unidades están arriba, al inicio del panel.</p>';
+})();
+
+(function(){
+  const el = document.getElementById('panelTodo');
+  const cvSerie = [52124.95, 56222.45, 55448.95];
+  const sfSerie = [30757.65, 42705.15, 46929.65];
+  const pnSerie = [21367.30, 13517.30, 8519.30];
+  const avg = (arr) => arr.reduce((a,b)=>a+b,0) / arr.length;
+  const cvProm = avg(cvSerie), sfProm = avg(sfSerie), pnProm = avg(pnSerie);
+
+  const ingresosProm = 147598.50, egresosProm = 137766.37, utilidadProm = 9832.13;
+
+  el.innerHTML =
+    '<p style="font-weight:600;margin:14px 0 2px;">Todo: promedio mensual con la información disponible</p>' +
+    '<p class="note" style="margin:0 0 14px;">Junta mayo, junio y julio 2026 (lo que se tiene de cada uno) y calcula el promedio mensual de cada indicador.</p>' +
+    '<div class="section-label" style="margin-top:0;">Cobranza — promedio de 3 cortes (mayo, junio, julio)</div>' +
+    '<div class="grid">' +
+      metricCard('Cartera vencida promedio', cvProm, '#d03b3b') +
+      metricCard('Saldo a favor promedio', sfProm, '#0ca30c') +
+      metricCard('Posición neta promedio', pnProm) +
+    '</div>' +
+    '<div class="section-label">Ingresos y egresos — promedio mensual</div>' +
+    '<div class="grid">' +
+      metricCard('Ingresos promedio mensual', ingresosProm, '#0ca30c') +
+      metricCard('Egresos promedio mensual', egresosProm, '#d03b3b') +
+      metricCard('Utilidad bruta promedio mensual', utilidadProm, '#0ca30c') +
+    '</div>' +
+    '<p class="note" style="margin-top:12px;">Los promedios de cartera vencida, saldo a favor y posición neta usan los 3 cortes de cobranza (30-may, 30-jun, 31-jul 2026). Los de ingresos, egresos y utilidad usan solo junio 2026 — es el único mes con cierre contable completo, así que el "promedio" hoy equivale a ese mes. En cuanto julio (y los meses siguientes) cierren, este promedio se recalcula con más datos.</p>' +
+    '<div style="margin-top:1.5rem;padding-top:1rem;border-top:1px solid var(--border);">' +
+    '<p class="section-label" style="margin-top:0;">Detalle completo — promedio mensual con todos los datos disponibles</p>' +
+    '<div id="panelTodoJunioMount"></div>' +
+    '</div>';
+})();
+
+const estatusUnidades = [
+  { label: 'Al corriente', count: 51, pct: 38.9, color: '#0ca30c' },
+  { label: 'Saldo a favor', count: 45, pct: 34.4, color: '#2a78d6' },
+  { label: 'Deudor', count: 35, pct: 26.7, color: '#d03b3b' }
+];
+new Chart(document.getElementById('chartEstatus'), {
+  type: 'doughnut',
+  data: {
+    labels: estatusUnidades.map(s => s.label),
+    datasets: [{ data: estatusUnidades.map(s => s.count), backgroundColor: estatusUnidades.map(s => s.color), borderColor: '#ffffff', borderWidth: 2 }]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false, cutout: '62%',
+    plugins: { legend: { display: false }, tooltip: { callbacks: { label: (ctx) => ctx.label + ': ' + ctx.parsed + ' unidades' } } }
+  }
+});
+document.getElementById('estatusLegend').innerHTML = estatusUnidades.map(s =>
+  '<div class="row-line" style="align-items:center;">' +
+    '<span style="display:flex;align-items:center;gap:6px;color:var(--text-secondary);"><span class="dot" style="background:' + s.color + ';"></span>' + s.label + '</span>' +
+    '<span style="font-weight:600;">' + s.count + ' <span style="font-weight:400;color:var(--text-muted);font-size:11px;">(' + s.pct + '%)</span></span>' +
+  '</div>'
+).join('') + '<p class="note" style="margin-top:8px;">131 unidades totales. "Saldo a favor" son residentes con adelanto neto; "Deudor" son las 35 unidades con cartera vencida activa.</p>';
+
+(function(){
+  const el = document.getElementById('panelBalance');
+  const banco = 367108.73;
+  const cxc = 55448.95;
+  const activos = banco + cxc;
+  const adelantados = 46929.65;
+  const pasivos = adelantados;
+  const patrimonio = activos - pasivos;
+  el.innerHTML =
+    '<p style="font-weight:600;margin:14px 0 2px;">Balance hasta la última actualización disponible</p>' +
+    '<p class="note" style="margin:0 0 16px;">Cada renglón usa el dato más reciente que se tiene: banco al cierre de junio 2026, cartera vencida y adelantos al corte de julio 2026.</p>' +
+    sectionBar('Activos', activos) +
+    rowLine('Banco (saldo final, cierre junio 2026)', banco, 12) +
+    rowLine('Cuentas por cobrar (cartera vencida, corte 31-jul-2026)', cxc, 12) +
+    sectionBar('Pasivos', pasivos) +
+    rowLine('Adelantados / depósitos a favor de residentes (corte 31-jul-2026)', adelantados, 12) +
+    highlightBar('(=) Patrimonio / posición neta', patrimonio) +
+    '<p class="note" style="margin-top:14px;">Patrimonio = Activos (banco + cartera vencida) − Pasivos (adelantos de residentes). No incluye activos fijos (áreas comunes, equipo) ni pasivos con proveedores de julio, que aún no se cierran.</p>';
+})();
+
+const kpisJunio = {
+  banco_inicial: 357276.60, ingresos_total: 147598.50, egresos_total: 137766.37,
+  banco_final: 367108.73, disponible_real: 324403.58, cxc: 56222.45,
+  adelantados: 42705.15, utilidad_bruta: 9832.13, target_disponible: 300000, target_cxc: 15000
+};
+const ingresosJunio = [
+  {label:'Cuotas (mes actual)', value:83288.50},
+  {label:'Anticipadas', value:15610.00},
+  {label:'CV Convenio / Recuperación cartera', value:17870.00},
+  {label:'Garantía de terraza', value:12900.00},
+  {label:'No identificados', value:5940.00},
+  {label:'Renta terraza', value:7900.00},
+  {label:'Cuota extraordinaria', value:2090.00},
+  {label:'Multas / Penalizaciones', value:2000.00}
+];
+const egresosJunio = [
+  {desc:'CFE servicio 929200808443', seccion:'Mantenimiento', sub:'CFE 8443', importe:4871.00},
+  {desc:'CFE servicio 929200705407', seccion:'Mantenimiento', sub:'CFE 5407', importe:11031.00},
+  {desc:'Internet', seccion:'Seguridad y Vigilancia', sub:'Internet', importe:440.00},
+  {desc:'Mantenimiento de gym', seccion:'Otros Gastos', sub:'Reparación GYM', importe:4872.00},
+  {desc:'Mantenimiento de cámaras', seccion:'Otros Gastos', sub:'Reparación Seguridad', importe:986.00},
+  {desc:'Vigilancia 1ra quincena', seccion:'Seguridad y Vigilancia', sub:'Vigilancia', importe:20880.00},
+  {desc:'Servicio de administración', seccion:'Administrativos', sub:'Administración', importe:19650.00},
+  {desc:'Mantenimiento gym (2)', seccion:'Otros Gastos', sub:'Reparación GYM', importe:2320.00},
+  {desc:'Ajuste de pistón', seccion:'Otros Gastos', sub:'Reparación Seguridad', importe:812.00},
+  {desc:'Recolección de basura', seccion:'Mantenimiento', sub:'Basura', importe:6550.00},
+  {desc:'Vigilancia 2da quincena', seccion:'Seguridad y Vigilancia', sub:'Vigilancia', importe:20880.00},
+  {desc:'Jardinería', seccion:'Mantenimiento', sub:'Jardinería', importe:14000.00},
+  {desc:'Mantenimiento de alberca', seccion:'Mantenimiento', sub:'Alberca', importe:6958.44},
+  {desc:'Sillas de oficina (x2)', seccion:'Otros Gastos', sub:'Inversión', importe:3747.00},
+  {desc:'Reflector Lumicraft Led300w (x2)', seccion:'Otros Gastos', sub:'Inversión', importe:4004.00},
+  {desc:'Devoluciones de garantía terraza', seccion:'Otros Gastos', sub:'No es gasto - Retorno garantías', importe:8000.00},
+  {desc:'Garrafones de agua', seccion:'Seguridad y Vigilancia', sub:'Agua', importe:260.00},
+  {desc:'Recarga celular caseta', seccion:'Seguridad y Vigilancia', sub:'Recarga celular', importe:200.00},
+  {desc:'Insumos de limpieza', seccion:'Mantenimiento', sub:'Artículos limpieza', importe:784.00},
+  {desc:'Mouse inalámbrico (oficina)', seccion:'Otros Gastos', sub:'Inversión', importe:259.26},
+  {desc:'Ventilador (oficina)', seccion:'Otros Gastos', sub:'Inversión', importe:569.00},
+  {desc:'Porta escobas (oficina)', seccion:'Otros Gastos', sub:'Inversión', importe:138.99},
+  {desc:'Estantero organizador (oficina)', seccion:'Otros Gastos', sub:'Inversión', importe:319.00},
+  {desc:'Ventilador de techo (oficina)', seccion:'Otros Gastos', sub:'Inversión', importe:721.21},
+  {desc:'Escritorio minimalista (oficina)', seccion:'Otros Gastos', sub:'Inversión', importe:774.39},
+  {desc:'Insumos de limpieza (2)', seccion:'Mantenimiento', sub:'Artículos limpieza', importe:1302.19},
+  {desc:'Dispensador papel higiénico', seccion:'Mantenimiento', sub:'Artículos limpieza', importe:810.72},
+  {desc:'Dispensador de sanitas', seccion:'Otros Gastos', sub:'Inversión', importe:157.77},
+  {desc:'Dispensador de sanitas (2)', seccion:'Otros Gastos', sub:'Inversión', importe:473.40},
+  {desc:'Cajas de uso rudo', seccion:'Otros Gastos', sub:'Inversión', importe:995.00}
+];
+const cxcPorUnidadJunio = [
+  {unidad:'SENDERO DEL MEDITERRANEO - 109', monto:12287.50},
+  {unidad:'PASEO DEL MEDITERRANEO - 169', monto:11447.50},
+  {unidad:'PASEO DEL MEDITERRANEO - 178', monto:5845.00},
+  {unidad:'PASEO DEL MEDITERRANEO - 120', monto:5505.00},
+  {unidad:'PASEO DEL MEDITERRANEO - 255', monto:3230.00},
+  {unidad:'PASEO DEL MEDITERRANEO - 111', monto:3210.00},
+  {unidad:'PASEO DEL MEDITERRANEO - 229', monto:3089.50},
+  {unidad:'PASEO DEL MEDITERRANEO - 247', monto:2090.45},
+  {unidad:'PASEO DEL MEDITERRANEO - 201', monto:2090.00},
+  {unidad:'PASEO DEL MEDITERRANEO - 121', monto:1900.00},
+  {unidad:'PASEO DEL MEDITERRANEO - 119', monto:1140.00},
+  {unidad:'PASEO DEL MEDITERRANEO - 209', monto:1140.00},
+  {unidad:'PASEO DEL MEDITERRANEO - 145', monto:950.00},
+  {unidad:'PASEO DEL MEDITERRANEO - 193', monto:900.00},
+  {unidad:'PASEO DEL MEDITERRANEO - 157', monto:602.50},
+  {unidad:'PASEO DEL MEDITERRANEO - 160', monto:497.50},
+  {unidad:'PASEO DEL MEDITERRANEO - 147', monto:100.00},
+  {unidad:'PASEO DEL MEDITERRANEO - 257', monto:80.00},
+  {unidad:'PASEO DEL MEDITERRANEO - 122', monto:40.00},
+  {unidad:'PASEO DEL MEDITERRANEO - 150', monto:40.00},
+  {unidad:'PASEO DEL MEDITERRANEO - 165', monto:30.00},
+  {unidad:'PASEO DEL MEDITERRANEO - 217', monto:7.50}
+];
+const adelantadosTopJunio = [
+  {unidad:'SENDERO DEL MEDITERRANEO - 113', monto:14307.50},
+  {unidad:'SENDERO DEL MEDITERRANEO - 110', monto:7600.00},
+  {unidad:'PASEO DEL MEDITERRANEO - 168', monto:5700.00},
+  {unidad:'PASEO DEL MEDITERRANEO - 126', monto:2850.00},
+  {unidad:'PASEO DEL MEDITERRANEO - 149', monto:965.00}
+];
+
+function buildMonthlyReport(containerId, suffix, opts){
+  opts = opts || {};
+  const isProm = !!opts.isPromedio;
+  const cxcValue = opts.cxcValue !== undefined ? opts.cxcValue : kpisJunio.cxc;
+  const cxcLabel = opts.cxcLabel || 'Cuentas por cobrar';
+  const adelValue = opts.adelValue !== undefined ? opts.adelValue : kpisJunio.adelantados;
+  const adelLabel = opts.adelLabel || 'Adelantados';
+  const kpiSuffix = isProm ? ' (prom.)' : '';
+  const el = document.getElementById(containerId);
+  el.innerHTML =
+    (isProm ? '<p class="note" style="margin:14px 0 4px;">Cada indicador usa el promedio de los meses con datos disponibles a la fecha — ver la nota al final de cada sección.</p>' : '') +
+    '<div class="grid" style="margin-top:' + (isProm ? '4px' : '14px') + ';">' +
+      metricCard('Banco inicial' + kpiSuffix, kpisJunio.banco_inicial) +
+      metricCard('Ingresos' + kpiSuffix, kpisJunio.ingresos_total, '#0ca30c') +
+      metricCard('Egresos' + kpiSuffix, kpisJunio.egresos_total, '#d03b3b') +
+      metricCard('Banco final' + kpiSuffix, kpisJunio.banco_final) +
+      metricCard('Disponible real' + kpiSuffix, kpisJunio.disponible_real) +
+      metricCard(cxcLabel, cxcValue, '#c98500') +
+      metricCard(adelLabel, adelValue) +
+      metricCard('Utilidad bruta' + kpiSuffix, kpisJunio.utilidad_bruta, '#0ca30c') +
+    '</div>' +
+    (isProm ? '<p class="note" style="margin:6px 0 0;">Banco, ingresos, egresos, disponible y utilidad: promedio de 1 mes (junio 2026, único cierre contable completo). Cuentas por cobrar y adelantados: promedio de 3 cortes de cobranza (mayo, junio, julio).</p>' : '') +
+    '<div class="grid" style="grid-template-columns:1fr 1fr;margin-top:12px;" id="meters' + suffix + '"></div>' +
+    '<div class="subtabbar" id="subtabbar' + suffix + '">' +
+      '<button class="subtab-btn" data-sub="resumen">Resumen y gráficas</button>' +
+      '<button class="subtab-btn" data-sub="detalle">Detalle de egresos</button>' +
+      '<button class="subtab-btn" data-sub="estado">Generar estado de resultados</button>' +
+    '</div>' +
+    '<div id="subResumen' + suffix + '"></div>' +
+    '<div id="subDetalle' + suffix + '"></div>' +
+    '<div id="subEstado' + suffix + '"></div>';
+
+  function meter(label, value, target, invert){
+    const p = value / target * 100;
+    const good = invert ? (p <= 100) : (p >= 100);
+    const color = good ? '#0ca30c' : '#d03b3b';
+    const bg = good ? '#e7f6e7' : '#fbe9e9';
+    const width = Math.min(p, 100);
+    return '<div class="card"><div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px;">' +
+      '<span style="font-size:12px;color:var(--text-secondary);">' + label + '</span>' +
+      '<span style="font-size:13px;font-weight:600;color:' + color + ';">' + pct(p) + '%</span></div>' +
+      '<div style="height:8px;background:' + bg + ';border-radius:4px;overflow:hidden;">' +
+      '<div style="height:100%;width:' + width + '%;background:' + color + ';border-radius:4px;"></div></div>' +
+      '<p style="font-size:11px;color:var(--text-muted);margin:6px 0 0;">' + fmt(value) + ' de target ' + fmt(target) + '</p></div>';
+  }
+  document.getElementById('meters' + suffix).innerHTML =
+    meter('Disponible vs. target de fondo', kpisJunio.disponible_real, kpisJunio.target_disponible, false) +
+    meter((isProm ? 'Cartera vencida promedio' : 'Cartera vencida') + ' vs. target', cxcValue, kpisJunio.target_cxc, true);
+
+  function hbar(canvasId, items, valueKey, labelKey){
+    const sorted = [...items].sort((a,b) => b[valueKey] - a[valueKey]);
+    new Chart(document.getElementById(canvasId), {
+      type: 'bar',
+      data: { labels: sorted.map(i => i[labelKey]), datasets: [{ data: sorted.map(i => i[valueKey]), backgroundColor: sorted.map((_,idx) => cove[idx % cove.length]), borderRadius: 4 }] },
+      options: {
+        indexAxis: 'y', responsive: true, maintainAspectRatio: false,
+        plugins: { legend: { display: false }, tooltip: { callbacks: { label: (ctx) => fmt2(ctx.parsed.x) } } },
+        scales: {
+          x: { ticks: { callback: (v) => fmt(v), font: { size: 11 } }, grid: { color: '#e2e0d8' } },
+          y: { ticks: { font: { size: 11 } }, grid: { display: false } }
+        }
+      }
+    });
+  }
+
+  const seccionTotales = {};
+  egresosJunio.forEach(e => { seccionTotales[e.seccion] = (seccionTotales[e.seccion]||0) + e.importe; });
+  const seccionItems = Object.entries(seccionTotales).map(([label,value]) => ({label,value}));
+  const otrosGastos = egresosJunio.filter(e => e.seccion === 'Otros Gastos');
+  const otrosGastosTotal = otrosGastos.reduce((s,i)=>s+i.importe,0);
+  const RETORNO_SUB = 'No es gasto - Retorno garantías';
+  const retornoGarantias = otrosGastos.filter(e => e.sub === RETORNO_SUB).reduce((s,i)=>s+i.importe,0);
+  const eventualTotales = {};
+  otrosGastos.filter(e => e.sub !== RETORNO_SUB).forEach(e => { eventualTotales[e.sub] = (eventualTotales[e.sub]||0) + e.importe; });
+  const eventualItems = Object.entries(eventualTotales).map(([label,value]) => ({label,value}));
+  const eventualTotal = eventualItems.reduce((s,i)=>s+i.value,0);
+  const inversionTotal = eventualTotales['Inversión'] || 0;
+
+  document.getElementById('subResumen' + suffix).innerHTML =
+    '<div class="section-label">Ingresos por rubro</div><div style="position:relative;height:220px;"><canvas id="chartIngresos' + suffix + '"></canvas></div>' +
+    '<div class="section-label">Egresos por categoría</div>' +
+    '<div class="grid" style="grid-template-columns:1.3fr 1fr;align-items:center;">' +
+      '<div style="position:relative;height:160px;"><canvas id="chartEgresos' + suffix + '"></canvas></div>' +
+      '<div><div style="position:relative;height:140px;"><canvas id="chartEgresosPie' + suffix + '"></canvas></div><div id="egresosPieLegend' + suffix + '" style="margin-top:6px;"></div></div>' +
+    '</div>' +
+    '<div class="section-label">Gastos eventuales (Otros Gastos), desglose</div>' +
+    '<div class="grid" style="grid-template-columns:1.3fr 1fr;align-items:start;">' +
+      '<div style="position:relative;height:160px;"><canvas id="chartEventuales' + suffix + '"></canvas></div>' +
+      '<div>' +
+        '<div style="display:flex;gap:6px;margin-bottom:8px;flex-wrap:wrap;">' +
+          '<button class="subtab-btn active" id="btnEvtVsEventual' + suffix + '" style="font-size:11px;padding:4px 8px;">% vs eventuales</button>' +
+          '<button class="subtab-btn" id="btnEvtVsTotal' + suffix + '" style="font-size:11px;padding:4px 8px;">% vs total egresos</button>' +
+        '</div>' +
+        '<div style="position:relative;height:140px;"><canvas id="chartEventualesPie' + suffix + '"></canvas></div>' +
+        '<div id="eventualesPieLegend' + suffix + '" style="margin-top:6px;"></div>' +
+      '</div>' +
+    '</div>' +
+    '<div class="row-line" style="margin-top:8px;padding:8px 10px;background:var(--surface);border-radius:4px;">' +
+      '<span style="color:var(--text-secondary);">Retorno de garantías de terraza <span class="note">(fuera de las gráficas: no es un gasto operativo, es devolución de un depósito)</span></span>' +
+      '<span style="font-weight:600;white-space:nowrap;margin-left:10px;">' + fmt2(retornoGarantias) + '</span>' +
+    '</div>' +
+    '<div style="margin-top:1.25rem;padding-top:1rem;border-top:1px solid var(--border);">' +
+    '<p class="section-label" style="margin-top:0;">Lectura para el administrador</p>' +
+    '<ul style="margin:0;padding-left:18px;font-size:13px;line-height:1.7;">' +
+    '<li>El banco final calculado (' + fmt(kpisJunio.banco_final) + ') reconcilia exacto contra lo reportado oficialmente — diferencia $0.</li>' +
+    '<li>El disponible real está ' + pct((kpisJunio.disponible_real/kpisJunio.target_disponible-1)*100) + '% arriba del target de fondo (' + fmt(kpisJunio.target_disponible) + ').</li>' +
+    '<li>La ' + (isProm ? 'cartera vencida promedio' : 'cartera vencida') + ' (' + fmt(cxcValue) + ') es ' + pct(cxcValue/kpisJunio.target_cxc) + 'x el target (' + fmt(kpisJunio.target_cxc) + ').</li>' +
+    '<li>Otros Gastos representan ' + pct(otrosGastosTotal/kpisJunio.egresos_total*100) + '% del total de egresos (incluye el retorno de garantías, que no es gasto operativo). De los gastos eventuales reales (' + fmt(eventualTotal) + '), Inversión en la oficina de administración (' + fmt(inversionTotal) + ') es el mayor componente, no recurrente.</li>' +
+    '</ul></div>';
+
+  const seccionSorted = [...seccionItems].sort((a,b) => b.value - a.value);
+  const eventualSorted = [...eventualItems].sort((a,b) => b.value - a.value);
+  hbar('chartIngresos' + suffix, ingresosJunio, 'value', 'label');
+  hbar('chartEgresos' + suffix, seccionSorted, 'value', 'label');
+  hbar('chartEventuales' + suffix, eventualSorted, 'value', 'label');
+
+  function buildPie(canvasId, legendId, items, denom, extraSlice){
+    const existing = Chart.getChart(canvasId);
+    if (existing) existing.destroy();
+    const labels = items.map(i => i.label);
+    const data = items.map(i => i.value);
+    const colors = items.map((_,idx) => cove[idx % cove.length]);
+    if (extraSlice){ labels.push(extraSlice.label); data.push(extraSlice.value); colors.push('#c9c7bc'); }
+    new Chart(document.getElementById(canvasId), {
+      type: 'doughnut',
+      data: { labels, datasets: [{ data, backgroundColor: colors, borderColor: '#ffffff', borderWidth: 2 }] },
+      options: {
+        responsive: true, maintainAspectRatio: false, cutout: '55%',
+        plugins: { legend: { display: false }, tooltip: { callbacks: { label: (ctx) => ctx.label + ': ' + fmt2(ctx.parsed) + ' (' + pct(ctx.parsed/denom*100) + '%)' } } }
+      }
+    });
+    document.getElementById(legendId).innerHTML = labels.map((l,idx) =>
+      '<div class="row-line" style="align-items:center;"><span style="display:flex;align-items:center;gap:6px;color:var(--text-secondary);font-size:12px;">' +
+      '<span class="dot" style="background:' + colors[idx] + ';"></span>' + l + '</span>' +
+      '<span style="font-weight:600;font-size:12px;">' + pct(data[idx]/denom*100) + '%</span></div>'
+    ).join('');
+  }
+
+  buildPie('chartEgresosPie' + suffix, 'egresosPieLegend' + suffix, seccionSorted, kpisJunio.egresos_total);
+
+  function renderEventualesPie(mode){
+    if (mode === 'total') {
+      buildPie('chartEventualesPie' + suffix, 'eventualesPieLegend' + suffix, eventualSorted, kpisJunio.egresos_total, { label: 'Resto de egresos', value: kpisJunio.egresos_total - eventualTotal });
+    } else {
+      buildPie('chartEventualesPie' + suffix, 'eventualesPieLegend' + suffix, eventualSorted, eventualTotal);
+    }
+    document.getElementById('btnEvtVsEventual' + suffix).classList.toggle('active', mode !== 'total');
+    document.getElementById('btnEvtVsTotal' + suffix).classList.toggle('active', mode === 'total');
+  }
+  renderEventualesPie('eventual');
+  document.getElementById('btnEvtVsEventual' + suffix).addEventListener('click', () => renderEventualesPie('eventual'));
+  document.getElementById('btnEvtVsTotal' + suffix).addEventListener('click', () => renderEventualesPie('total'));
+
+  const orden = ['Seguridad y Vigilancia','Mantenimiento','Administrativos','Otros Gastos'];
+  let rows = '';
+  orden.forEach(sec => {
+    const items = egresosJunio.filter(e => e.seccion === sec).sort((a,b) => b.importe - a.importe);
+    const subtotal = items.reduce((s,i)=>s+i.importe,0);
+    rows += '<tr><td colspan="3" style="background:var(--surface);font-weight:600;">' + sec + '</td></tr>';
+    items.forEach(i => {
+      rows += '<tr><td>' + i.desc + '</td><td style="color:var(--text-secondary);">' + i.sub + '</td><td style="text-align:right;">' + fmt2(i.importe) + '</td></tr>';
+    });
+    rows += '<tr><td colspan="2" style="font-weight:500;text-align:right;">Subtotal</td><td style="font-weight:500;text-align:right;">' + fmt2(subtotal) + '</td></tr>';
+  });
+  document.getElementById('subDetalle' + suffix).innerHTML =
+    '<table><colgroup><col style="width:45%"><col style="width:30%"><col style="width:25%"></colgroup>' +
+    '<thead><tr><th>Descripción</th><th>Subcategoría</th><th style="text-align:right;">Importe</th></tr></thead>' +
+    '<tbody>' + rows + '</tbody>' +
+    '<tfoot><tr><td colspan="2" style="font-weight:600;border-top:2px solid var(--border-strong);">Total egresos' + (isProm ? ' promedio mensual' : ' junio 2026') + '</td>' +
+    '<td style="font-weight:600;text-align:right;border-top:2px solid var(--border-strong);">' + fmt2(kpisJunio.egresos_total) + '</td></tr></tfoot></table>' +
+    '<p class="note" style="margin-top:10px;">30 partidas' + (isProm ? ' (detalle de junio, único mes con desglose completo; se usa como base del promedio mensual)' : '') + '. Incluye correcciones confirmadas: reflector LED x2, sillas de oficina x2; se retiraron "servicio de conexión de tarja" y el cargo sin desglose de gastos menores.</p>';
+
+  let egresosHtml = '';
+  orden.forEach(sec => {
+    const items = egresosJunio.filter(e => e.seccion === sec);
+    const sub = {};
+    items.forEach(i => { sub[i.sub] = (sub[i.sub]||0) + i.importe; });
+    const total = Object.values(sub).reduce((a,b)=>a+b,0);
+    egresosHtml += sectionBar('Gastos de ' + sec, total);
+    Object.entries(sub).sort((a,b)=>b[1]-a[1]).forEach(([label,value]) => { egresosHtml += rowLine(label, value, 12); });
+  });
+  let ingresosHtml = '';
+  [...ingresosJunio].sort((a,b)=>b.value-a.value).forEach(i => { ingresosHtml += rowLine(i.label, i.value); });
+  let cxcHtml = '<table style="margin-top:8px;"><colgroup><col style="width:60%"><col style="width:40%"></colgroup>' +
+    '<thead><tr><th>Unidad</th><th style="text-align:right;">Adeudo</th></tr></thead><tbody>';
+  cxcPorUnidadJunio.forEach(u => { cxcHtml += '<tr><td>' + u.unidad + '</td><td style="text-align:right;">' + fmt2(u.monto) + '</td></tr>'; });
+  cxcHtml += '</tbody><tfoot><tr><td style="font-weight:600;border-top:2px solid var(--border-strong);">Total (22 unidades' + (isProm ? ', detalle de junio' : '') + ')</td>' +
+    '<td style="font-weight:600;text-align:right;border-top:2px solid var(--border-strong);">' + fmt2(kpisJunio.cxc) + '</td></tr></tfoot></table>';
+  let adelHtml = '';
+  adelantadosTopJunio.forEach(a => { adelHtml += rowLine(a.unidad, a.monto); });
+
+  document.getElementById('subEstado' + suffix).innerHTML =
+    '<p style="font-weight:600;margin:0 0 2px;">Estado de flujo de efectivo</p>' +
+    '<p class="note" style="margin:0 0 16px;">' + (isProm ? 'Promedio mensual — construido sobre el detalle de junio 2026 (único mes con cierre contable completo)' : 'Del 01 al 30 de junio 2026') + ' — Coto 10 Puerta Natura</p>' +
+    (isProm ? '<div class="row-line" style="background:var(--surface);padding:6px 8px;border-radius:4px;margin-bottom:10px;"><span>Cuentas por cobrar — promedio 3 meses (mayo-julio)</span><span style="font-weight:600;">' + fmt2(cxcValue) + '</span></div>' +
+      '<div class="row-line" style="background:var(--surface);padding:6px 8px;border-radius:4px;margin-bottom:10px;"><span>Adelantados — promedio 3 meses (mayo-julio)</span><span style="font-weight:600;">' + fmt2(adelValue) + '</span></div>' : '') +
+    rowLine('Saldo inicial', kpisJunio.banco_inicial) +
+    sectionBar('(+) Ingresos', kpisJunio.ingresos_total) + ingresosHtml +
+    sectionBar('(-) Egresos', kpisJunio.egresos_total) + egresosHtml +
+    highlightBar('(=) Saldo en bancos', kpisJunio.banco_final) +
+    '<p class="section-label">Pendientes por pagar a proveedores</p>' +
+    '<p style="font-size:12px;color:var(--text-secondary);">Confirmado: $0.00. No hay pagos pendientes a proveedores al cierre de junio 2026.</p>' +
+    '<p class="section-label">Créditos diferidos / adelantados (top 5 de 47 unidades' + (isProm ? ', detalle de junio' : '') + ')</p>' +
+    adelHtml + rowLine('Total adelantados (47 unidades' + (isProm ? ', detalle de junio' : '') + ')', kpisJunio.adelantados) +
+    highlightBar('(=) Disponible a la fecha', kpisJunio.disponible_real) +
+    '<p class="section-label">Cuentas por cobrar' + (isProm ? ' — detalle de junio 2026' : ' al 30 de junio 2026') + ' (22 unidades)</p>' +
+    cxcHtml;
+
+  const subPanels = { resumen: document.getElementById('subResumen' + suffix), detalle: document.getElementById('subDetalle' + suffix), estado: document.getElementById('subEstado' + suffix) };
+  const subBtns = document.querySelectorAll('#subtabbar' + suffix + ' .subtab-btn');
+  function showSub(name){
+    Object.keys(subPanels).forEach(k => subPanels[k].style.display = (k === name) ? '' : 'none');
+    subBtns.forEach(b => b.classList.toggle('active', b.dataset.sub === name));
+  }
+  subBtns.forEach(b => b.addEventListener('click', () => showSub(b.dataset.sub)));
+  showSub('resumen');
+}
+buildMonthlyReport('panelJunio', 'Jun');
+buildMonthlyReport('panelTodoJunioMount', 'Todo', {
+  isPromedio: true,
+  cxcValue: 54598.78,
+  cxcLabel: 'Cuentas por cobrar (prom. 3m)',
+  adelValue: 40130.82,
+  adelLabel: 'Adelantados (prom. 3m)'
+});
+
+const monthPanels = { resumen: document.getElementById('panelResumenGeneral'), todo: document.getElementById('panelTodo'), balance: document.getElementById('panelBalance'), junio: document.getElementById('panelJunio'), julio: document.getElementById('panelJulio') };
+const monthBtns = document.querySelectorAll('#monthTabs .tab-btn');
+function showMonth(name){
+  Object.keys(monthPanels).forEach(k => monthPanels[k].style.display = (k === name) ? '' : 'none');
+  monthBtns.forEach(b => b.classList.toggle('active', b.dataset.month === name));
+}
+monthBtns.forEach(b => b.addEventListener('click', () => showMonth(b.dataset.month)));
+showMonth('junio');
+</script>
+</body>
+</html>
