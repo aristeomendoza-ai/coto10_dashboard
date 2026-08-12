@@ -451,25 +451,25 @@ const datasetTodo = {
 
 /* ============ RESUMEN GENERAL ============ */
 const historicoFinanciero = [
-  {label:'Ene-25', banco:211558.46, disponible:104198.46, cxc:41785.0},
-  {label:'Feb-25', banco:209191.62, disponible:101973.62, cxc:46814.5},
-  {label:'Mar-25', banco:207262.66, disponible:90299.44, cxc:61017.5},
-  {label:'Abr-25', banco:192759.51, disponible:76603.51, cxc:62466.0},
-  {label:'May-25', banco:194264.55, disponible:99614.55, cxc:62095.0},
-  {label:'Jun-25', banco:196972.92, disponible:88420.92, cxc:63849.0},
-  {label:'Jul-25', banco:214709.8, disponible:115987.8, cxc:60990.0},
-  {label:'Ago-25', banco:198257.6, disponible:98501.6, cxc:60203.5},
-  {label:'Sep-25', banco:202658.75, disponible:99490.75, cxc:59646.75},
-  {label:'Oct-25', banco:197706.98, disponible:95204.98, cxc:62978.0},
-  {label:'Nov-25', banco:205316.23, disponible:119656.23, cxc:59892.5},
-  {label:'Dic-25', banco:197505.13, disponible:104292, cxc:52649.5},
-  {label:'Ene-26', banco:260417, disponible:151047.04, cxc:43132.45},
-  {label:'Feb-26', banco:376961.96, disponible:279991.95, cxc:34250.45},
-  {label:'Mar-26', banco:400876.14, disponible:304111.13, cxc:34445.45},
-  {label:'Abr-26', banco:404116.66, disponible:310326.66, cxc:32754.5},
-  {label:'May-26', banco:342103.65, disponible:323779.75, cxc:52124.95},
-  {label:'Jun-26', banco:kpisJunio.banco_final, disponible:kpisJunio.disponible_real, cxc:kpisJunio.cxc},
-  {label:'Jul-26', banco:kpisJulio.banco_final, disponible:kpisJulio.disponible_real, cxc:kpisJulio.cxc}
+  {label:'Ene-25', banco:211558.46, disponible:104198.46, porpagar:67610.0},
+  {label:'Feb-25', banco:209191.62, disponible:101973.62, porpagar:72018.0},
+  {label:'Mar-25', banco:207262.66, disponible:90299.44, porpagar:86313.22},
+  {label:'Abr-25', banco:192759.51, disponible:76603.51, porpagar:90056.0},
+  {label:'May-25', banco:194264.55, disponible:99614.55, porpagar:72250.0},
+  {label:'Jun-25', banco:196972.92, disponible:88420.92, porpagar:77702.0},
+  {label:'Jul-25', banco:214709.8, disponible:115987.8, porpagar:74222.0},
+  {label:'Ago-25', banco:198257.6, disponible:98501.6, porpagar:79906.0},
+  {label:'Sep-25', banco:202658.75, disponible:99490.75, porpagar:87968.0},
+  {label:'Oct-25', banco:197706.98, disponible:95204.98, porpagar:79702.0},
+  {label:'Nov-25', banco:205316.23, disponible:119656.23, porpagar:67610.0},
+  {label:'Dic-25', banco:197505.13, disponible:104292, porpagar:79913.13},
+  {label:'Ene-26', banco:260417, disponible:151047.04, porpagar:77069.96},
+  {label:'Feb-26', banco:376961.96, disponible:279991.95, porpagar:68470.01},
+  {label:'Mar-26', banco:400876.14, disponible:304111.13, porpagar:72065.01},
+  {label:'Abr-26', banco:404116.66, disponible:310326.66, porpagar:72890.0},
+  {label:'May-26', banco:342103.65, disponible:323779.75, porpagar:1223.9},
+  {label:'Jun-26', banco:kpisJunio.banco_final, disponible:kpisJunio.disponible_real, porpagar:0},
+  {label:'Jul-26', banco:kpisJulio.banco_final, disponible:kpisJulio.disponible_real, porpagar:0}
 ];
 const HITO_COMITE_IDX = 9;   // Oct-25
 const HITO_ADMIN_IDX = 17;   // Jun-26
@@ -510,7 +510,7 @@ function pointRadii(len, hitoIdx, base){
 (function(){
   const el = document.getElementById('panelResumenGeneral');
   el.innerHTML =
-    '<div class="section-label" style="margin-top:14px;">Evolución de Banco, Disponible Real y Cuentas por Cobrar (enero 2025 — julio 2026)</div>' +
+    '<div class="section-label" style="margin-top:14px;">Evolución de Banco, Disponible Real y Cuentas por Pagar (enero 2025 — julio 2026)</div>' +
     '<div style="position:relative;height:280px;"><canvas id="chartEvolucionFinanciera"></canvas></div>' +
     '<p class="note" style="margin-top:8px;">Las cuentas por pagar (pagos a proveedores) se llevan al corriente a partir de junio de 2026.</p>' +
     '<div class="grid" style="margin-top:14px;">' +
@@ -534,8 +534,8 @@ function pointRadii(len, hitoIdx, base){
         { label: 'Disponible Real', data: historicoFinanciero.map(h => h.disponible),
           borderColor: '#0ca30c', backgroundColor: '#0ca30c', tension: 0.15, borderWidth: 2, spanGaps: false,
           pointRadius: pointRadii(historicoFinanciero.length, HITO_ADMIN_IDX, 2), pointHoverRadius: 6 },
-        { label: 'Cuentas por Cobrar', data: historicoFinanciero.map(h => h.cxc),
-          borderColor: '#d03b3b', backgroundColor: '#d03b3b', tension: 0.15, borderWidth: 2, borderDash: [5,3],
+        { label: 'Cuentas por Pagar', data: historicoFinanciero.map(h => h.porpagar),
+          borderColor: '#8e44ad', backgroundColor: '#8e44ad', tension: 0.15, borderWidth: 2, borderDash: [5,3],
           pointRadius: pointRadii(historicoFinanciero.length, HITO_ADMIN_IDX, 2), pointHoverRadius: 6 }
       ]
     },
