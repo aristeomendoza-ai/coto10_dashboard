@@ -94,6 +94,11 @@ td { padding: 5px 6px; font-size: 12px; border-bottom: 1px solid var(--border); 
   <canvas id="chartEvolucion"></canvas>
 </div>
 
+<div class="section-label">Cartera vencida vs. target ($40,000)</div>
+<div style="position:relative;height:200px;">
+  <canvas id="chartCarteraTarget"></canvas>
+</div>
+
 <div class="grid" style="grid-template-columns:1.1fr 1fr;margin-top:20px;align-items:start;">
   <div>
     <div class="section-label" style="margin-top:0;">Estatus de las 131 unidades (corte 31-jul-2026)</div>
@@ -108,8 +113,8 @@ td { padding: 5px 6px; font-size: 12px; border-bottom: 1px solid var(--border); 
   <button class="tab-btn" data-month="resumen">Resumen general</button>
   <button class="tab-btn" data-month="todo">Todo <span class="badge badge-partial">Promedio</span></button>
   <button class="tab-btn" data-month="balance">Balance general</button>
+  <button class="tab-btn" data-month="julio">Julio 2026 <span class="badge badge-complete">Completo</span></button>
   <button class="tab-btn" data-month="junio">Junio 2026 <span class="badge badge-complete">Completo</span></button>
-  <button class="tab-btn" data-month="julio">Julio 2026 <span class="badge badge-partial">Parcial</span></button>
 </div>
 
 <div id="panelResumenGeneral"></div>
@@ -154,64 +159,27 @@ new Chart(document.getElementById('chartEvolucion'), {
   }
 });
 
-(function(){
-  const el = document.getElementById('panelJulio');
-  el.innerHTML = '<div class="grid" style="margin-top:14px;">' +
-    metricCard('Cartera vencida (adeudo)', 55448.95, '#d03b3b') +
-    metricCard('Saldo a favor (adelantos)', 46929.65, '#0ca30c') +
-    metricCard('Posición neta pendiente', 8519.30) +
-    '</div>' +
-    '<div class="pending-panel">' +
-    '<p style="margin:0 0 8px;font-weight:600;font-size:13px;">Estado de resultados de julio 2026: captura parcial</p>' +
-    '<p style="margin:0 0 10px;font-size:13px;color:var(--text-secondary);">El archivo "PUERTA NATURA JULIO 26" ya trae la dispersión de la segunda quincena y los gastos menores, pero falta la primera quincena y el resto de categorías (mantenimiento, administración, CFE) para cerrar el mes.</p>' +
-    '<p style="margin:0;font-size:12px;color:var(--text-muted);">Avísale a Claude en el chat en cuanto tengas el cierre completo de julio, y lo captura igual que junio.</p>' +
-    '</div>';
-})();
-
-(function(){
-  const el = document.getElementById('panelResumenGeneral');
-  el.innerHTML = '<div class="grid" style="margin-top:14px;">' +
-    metricCard('Cartera vencida (más reciente, 31-jul)', 55448.95, '#d03b3b') +
-    metricCard('Saldo a favor (más reciente, 31-jul)', 46929.65, '#0ca30c') +
-    metricCard('Posición neta (más reciente, 31-jul)', 8519.30) +
-    metricCard('Egresos (último cierre, junio)', 137766.37) +
-    metricCard('Banco final (último cierre, junio)', 367108.73) +
-    metricCard('Disponible real (último cierre, junio)', 324403.58) +
-    '</div>' +
-    '<p class="note" style="margin-top:12px;">Último estado de resultados cerrado: junio 2026. Último corte de cobranza disponible: 31 de julio 2026 (egresos de julio aún en captura parcial). La evolución de saldos y el estatus de las 131 unidades están arriba, al inicio del panel.</p>';
-})();
-
-(function(){
-  const el = document.getElementById('panelTodo');
-  const cvSerie = [52124.95, 56222.45, 55448.95];
-  const sfSerie = [30757.65, 42705.15, 46929.65];
-  const pnSerie = [21367.30, 13517.30, 8519.30];
-  const avg = (arr) => arr.reduce((a,b)=>a+b,0) / arr.length;
-  const cvProm = avg(cvSerie), sfProm = avg(sfSerie), pnProm = avg(pnSerie);
-
-  const ingresosProm = 147598.50, egresosProm = 137766.37, utilidadProm = 9832.13;
-
-  el.innerHTML =
-    '<p style="font-weight:600;margin:14px 0 2px;">Todo: promedio mensual con la información disponible</p>' +
-    '<p class="note" style="margin:0 0 14px;">Junta mayo, junio y julio 2026 (lo que se tiene de cada uno) y calcula el promedio mensual de cada indicador.</p>' +
-    '<div class="section-label" style="margin-top:0;">Cobranza — promedio de 3 cortes (mayo, junio, julio)</div>' +
-    '<div class="grid">' +
-      metricCard('Cartera vencida promedio', cvProm, '#d03b3b') +
-      metricCard('Saldo a favor promedio', sfProm, '#0ca30c') +
-      metricCard('Posición neta promedio', pnProm) +
-    '</div>' +
-    '<div class="section-label">Ingresos y egresos — promedio mensual</div>' +
-    '<div class="grid">' +
-      metricCard('Ingresos promedio mensual', ingresosProm, '#0ca30c') +
-      metricCard('Egresos promedio mensual', egresosProm, '#d03b3b') +
-      metricCard('Utilidad bruta promedio mensual', utilidadProm, '#0ca30c') +
-    '</div>' +
-    '<p class="note" style="margin-top:12px;">Los promedios de cartera vencida, saldo a favor y posición neta usan los 3 cortes de cobranza (30-may, 30-jun, 31-jul 2026). Los de ingresos, egresos y utilidad usan solo junio 2026 — es el único mes con cierre contable completo, así que el "promedio" hoy equivale a ese mes. En cuanto julio (y los meses siguientes) cierren, este promedio se recalcula con más datos.</p>' +
-    '<div style="margin-top:1.5rem;padding-top:1rem;border-top:1px solid var(--border);">' +
-    '<p class="section-label" style="margin-top:0;">Detalle completo — promedio mensual con todos los datos disponibles</p>' +
-    '<div id="panelTodoJunioMount"></div>' +
-    '</div>';
-})();
+new Chart(document.getElementById('chartCarteraTarget'), {
+  data: {
+    labels: ['Mayo 2026 (30-may)', 'Junio 2026 (30-jun)', 'Julio 2026 (31-jul)'],
+    datasets: [
+      { type: 'bar', label: 'Cartera vencida', data: [52124.95, 56222.45, 55448.95],
+        backgroundColor: [52124.95, 56222.45, 55448.95].map(v => v > 40000 ? '#d03b3b' : '#0ca30c'),
+        borderRadius: 4, order: 2 },
+      { type: 'line', label: 'Target ($40,000)', data: [40000, 40000, 40000],
+        borderColor: '#c98500', borderWidth: 2, borderDash: [6,4], pointRadius: 0, fill: false, order: 1 }
+    ]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 11 } } },
+      tooltip: { callbacks: { label: (ctx) => ctx.dataset.label + ': ' + fmt2(ctx.parsed.y) } } },
+    scales: {
+      y: { ticks: { callback: (v) => fmt(v), font: { size: 11 } }, grid: { color: '#e2e0d8' } },
+      x: { ticks: { font: { size: 11 } }, grid: { display: false } }
+    }
+  }
+});
 
 const estatusUnidades = [
   { label: 'Al corriente', count: 51, pct: 38.9, color: '#0ca30c' },
@@ -236,41 +204,64 @@ document.getElementById('estatusLegend').innerHTML = estatusUnidades.map(s =>
   '</div>'
 ).join('') + '<p class="note" style="margin-top:8px;">131 unidades totales. "Saldo a favor" son residentes con adelanto neto; "Deudor" son las 35 unidades con cartera vencida activa.</p>';
 
-(function(){
-  const el = document.getElementById('panelBalance');
-  const banco = 367108.73;
-  const cxc = 55448.95;
-  const activos = banco + cxc;
-  const adelantados = 46929.65;
-  const pasivos = adelantados;
-  const patrimonio = activos - pasivos;
-  el.innerHTML =
-    '<p style="font-weight:600;margin:14px 0 2px;">Balance hasta la última actualización disponible</p>' +
-    '<p class="note" style="margin:0 0 16px;">Cada renglón usa el dato más reciente que se tiene: banco al cierre de junio 2026, cartera vencida y adelantos al corte de julio 2026.</p>' +
-    sectionBar('Activos', activos) +
-    rowLine('Banco (saldo final, cierre junio 2026)', banco, 12) +
-    rowLine('Cuentas por cobrar (cartera vencida, corte 31-jul-2026)', cxc, 12) +
-    sectionBar('Pasivos', pasivos) +
-    rowLine('Adelantados / depósitos a favor de residentes (corte 31-jul-2026)', adelantados, 12) +
-    highlightBar('(=) Patrimonio / posición neta', patrimonio) +
-    '<p class="note" style="margin-top:14px;">Patrimonio = Activos (banco + cartera vencida) − Pasivos (adelantos de residentes). No incluye activos fijos (áreas comunes, equipo) ni pasivos con proveedores de julio, que aún no se cierran.</p>';
-})();
+/* ============ DATOS POR MES ============ */
 
 const kpisJunio = {
   banco_inicial: 357276.60, ingresos_total: 147598.50, egresos_total: 137766.37,
   banco_final: 367108.73, disponible_real: 324403.58, cxc: 56222.45,
-  adelantados: 42705.15, utilidad_bruta: 9832.13, target_disponible: 300000, target_cxc: 15000
+  adelantados: 42705.15, utilidad_bruta: 9832.13, target_disponible: 300000, target_cxc: 40000
 };
+const kpisJulio = {
+  banco_inicial: 367108.73, ingresos_total: 156048.00, egresos_total: 129290.92,
+  banco_final: 393865.81, disponible_real: 346936.16, cxc: 55448.95,
+  adelantados: 46929.65, utilidad_bruta: 26757.08, target_disponible: 300000, target_cxc: 40000
+};
+const kpisTodo = {
+  banco_inicial: 362192.66, ingresos_total: 151823.25, egresos_total: 133528.64,
+  banco_final: 380487.27, disponible_real: 335669.87, cxc: 54598.78,
+  adelantados: 40130.82, utilidad_bruta: 18294.61, target_disponible: 300000, target_cxc: 40000
+};
+
 const ingresosJunio = [
   {label:'Cuotas (mes actual)', value:83288.50},
   {label:'Anticipadas', value:15610.00},
-  {label:'CV Convenio / Recuperación cartera', value:17870.00},
-  {label:'Garantía de terraza', value:12900.00},
-  {label:'No identificados', value:5940.00},
-  {label:'Renta terraza', value:7900.00},
-  {label:'Cuota extraordinaria', value:2090.00},
+  {label:'CV Convenio / Recuperación Cartera', value:17870.00},
+  {label:'Garantía de Terraza*', value:12900.00},
+  {label:'No ID (Sin identificar)', value:5940.00},
+  {label:'Renta (Terraza)', value:7900.00},
+  {label:'Cuota Extraordinaria', value:2090.00},
   {label:'Multas / Penalizaciones', value:2000.00}
 ];
+const ingresosJulio = [
+  {label:'Cuotas (mes actual)', value:105298},
+  {label:'Anticipadas', value:3800},
+  {label:'CV Convenio / Recuperación Cartera', value:25000},
+  {label:'Garantía de Terraza*', value:2000},
+  {label:'No ID (Sin identificar)', value:950},
+  {label:'Renta (Terraza)', value:10000},
+  {label:'Multas / Penalizaciones', value:1000},
+  {label:'Ajuste contable (error de cuenta)', value:8000}
+];
+const ingresosTodo = [
+  {label:'Cuotas (mes actual)', value:94293.25},
+  {label:'Anticipadas', value:9705.00},
+  {label:'CV Convenio / Recuperación Cartera', value:21435.00},
+  {label:'Garantía de Terraza*', value:7450.00},
+  {label:'No ID (Sin identificar)', value:3445.00},
+  {label:'Renta (Terraza)', value:8950.00},
+  {label:'Cuota Extraordinaria', value:1045.00},
+  {label:'Multas / Penalizaciones', value:1500.00},
+  {label:'Ajuste contable (error de cuenta)', value:4000.00}
+];
+
+/* Rubros de ingresos que se excluyen de las gráficas de "ingresos operativos"
+   porque no son ingreso real del condominio: depósitos/ajustes que entran a banco
+   pero no se quedan como ingreso propio. */
+const INGRESOS_EXCLUIDOS = {
+  'Garantía de Terraza*': 'Depósito reembolsable de garantía de terraza: entra como ingreso de caja, pero se debe devolver al residente — no es ingreso propio del condominio.',
+  'Ajuste contable (error de cuenta)': 'Ajuste bancario (ver hoja "Fuente Julio 2026" del Excel): no es una operación real del condominio, es una corrección de conciliación de banco.'
+};
+
 const egresosJunio = [
   {desc:'CFE servicio 929200808443', seccion:'Mantenimiento', sub:'CFE 8443', importe:4871.00},
   {desc:'CFE servicio 929200705407', seccion:'Mantenimiento', sub:'CFE 5407', importe:11031.00},
@@ -287,22 +278,81 @@ const egresosJunio = [
   {desc:'Mantenimiento de alberca', seccion:'Mantenimiento', sub:'Alberca', importe:6958.44},
   {desc:'Sillas de oficina (x2)', seccion:'Otros Gastos', sub:'Inversión', importe:3747.00},
   {desc:'Reflector Lumicraft Led300w (x2)', seccion:'Otros Gastos', sub:'Inversión', importe:4004.00},
-  {desc:'Devoluciones de garantía terraza', seccion:'Otros Gastos', sub:'No es gasto - Retorno garantías', importe:8000.00},
+  {desc:'Devoluciones de garantía terraza', seccion:'Otros Gastos', sub:'No es Gasto - Retornos Garantías', importe:8000.00},
   {desc:'Garrafones de agua', seccion:'Seguridad y Vigilancia', sub:'Agua', importe:260.00},
-  {desc:'Recarga celular caseta', seccion:'Seguridad y Vigilancia', sub:'Recarga celular', importe:200.00},
-  {desc:'Insumos de limpieza', seccion:'Mantenimiento', sub:'Artículos limpieza', importe:784.00},
+  {desc:'Recarga celular caseta', seccion:'Seguridad y Vigilancia', sub:'Recarga Celular', importe:200.00},
+  {desc:'Insumos de limpieza', seccion:'Mantenimiento', sub:'Artículos Limpieza', importe:784.00},
   {desc:'Mouse inalámbrico (oficina)', seccion:'Otros Gastos', sub:'Inversión', importe:259.26},
   {desc:'Ventilador (oficina)', seccion:'Otros Gastos', sub:'Inversión', importe:569.00},
   {desc:'Porta escobas (oficina)', seccion:'Otros Gastos', sub:'Inversión', importe:138.99},
   {desc:'Estantero organizador (oficina)', seccion:'Otros Gastos', sub:'Inversión', importe:319.00},
   {desc:'Ventilador de techo (oficina)', seccion:'Otros Gastos', sub:'Inversión', importe:721.21},
   {desc:'Escritorio minimalista (oficina)', seccion:'Otros Gastos', sub:'Inversión', importe:774.39},
-  {desc:'Insumos de limpieza (2)', seccion:'Mantenimiento', sub:'Artículos limpieza', importe:1302.19},
-  {desc:'Dispensador papel higiénico', seccion:'Mantenimiento', sub:'Artículos limpieza', importe:810.72},
+  {desc:'Insumos de limpieza (2)', seccion:'Mantenimiento', sub:'Artículos Limpieza', importe:1302.19},
+  {desc:'Dispensador papel higiénico', seccion:'Mantenimiento', sub:'Artículos Limpieza', importe:810.72},
   {desc:'Dispensador de sanitas', seccion:'Otros Gastos', sub:'Inversión', importe:157.77},
   {desc:'Dispensador de sanitas (2)', seccion:'Otros Gastos', sub:'Inversión', importe:473.40},
   {desc:'Cajas de uso rudo', seccion:'Otros Gastos', sub:'Inversión', importe:995.00}
 ];
+
+const egresosJulio = [
+  {desc:'Internet', seccion:'Seguridad y Vigilancia', sub:'Internet', importe:439},
+  {desc:'Vigilancia 1Q', seccion:'Seguridad y Vigilancia', sub:'Vigilancia', importe:20880},
+  {desc:'Vigilancia 2Q', seccion:'Seguridad y Vigilancia', sub:'Vigilancia', importe:20880},
+  {desc:'Servicio de Administración', seccion:'Administrativos', sub:'Administración', importe:19659},
+  {desc:'Recolección de basura', seccion:'Mantenimiento', sub:'Basura', importe:6550},
+  {desc:'Mantenimiento de alberca', seccion:'Mantenimiento', sub:'Alberca', importe:6958.44},
+  {desc:'Mantenimiento de áreas verdes', seccion:'Mantenimiento', sub:'Jardinería', importe:14000},
+  {desc:'ISR', seccion:'Administrativos', sub:'ISR', importe:9526.28},
+  {desc:'Mantenimiento de cámaras', seccion:'Otros Gastos', sub:'Reparación Seguridad', importe:580},
+  {desc:'Instalación de forníos y 1 aspersor', seccion:'Mantenimiento', sub:'Jardinería', importe:2000},
+  {desc:'Letreros', seccion:'Otros Gastos', sub:'Señalización', importe:1345.6},
+  {desc:'Reparación de bomba de agua', seccion:'Mantenimiento', sub:'Bomba de agua', importe:1850},
+  {desc:'Cámaras', seccion:'Otros Gastos', sub:'Inversión', importe:5220},
+  {desc:'Regadera (2pzas.) — ShopMall', seccion:'Otros Gastos', sub:'Reparación Alberca', importe:250},
+  {desc:'TAG (10 pzas) adherible — SIDEDQSA', seccion:'Seguridad y Vigilancia', sub:'TAG (acceso vehicular)', importe:659},
+  {desc:'Sonómetro digital — SHEN MING', seccion:'Otros Gastos', sub:'Inversión', importe:369},
+  {desc:'Recarga — Telcel', seccion:'Seguridad y Vigilancia', sub:'Recarga Celular', importe:200},
+  {desc:'Cámara — Steren (fact. 2081763)', seccion:'Otros Gastos', sub:'Inversión', importe:1290},
+  {desc:'2 Garrafones de agua — Bonafont', seccion:'Seguridad y Vigilancia', sub:'Agua', importe:260},
+  {desc:'2 Seguros para barra de pesas — Mercado libre', seccion:'Otros Gastos', sub:'Reparación GYM', importe:83.6},
+  {desc:'Reflector Led 300w — Alan Steve Montelongo', seccion:'Otros Gastos', sub:'Inversión', importe:1001},
+  {desc:'Cámara — Steren (fact. 2081765)', seccion:'Otros Gastos', sub:'Inversión', importe:1290},
+  {desc:'Rembolsos (devolución garantía terraza, 5 unidades)', seccion:'Otros Gastos', sub:'No es Gasto - Retornos Garantías', importe:10000},
+  {desc:'Error de cuenta devolución', seccion:'Otros Gastos', sub:'Ajuste contable', importe:4000}
+];
+
+const egresosTodo = [
+  {desc:'Administración (promedio jun-jul)', seccion:'Administrativos', sub:'Administración', importe:19654.5},
+  {desc:'ISR (promedio jun-jul)', seccion:'Administrativos', sub:'ISR', importe:4763.14},
+  {desc:'Alberca (promedio jun-jul)', seccion:'Mantenimiento', sub:'Alberca', importe:6958.44},
+  {desc:'Artículos Limpieza (promedio jun-jul)', seccion:'Mantenimiento', sub:'Artículos Limpieza', importe:1448.45},
+  {desc:'Basura (promedio jun-jul)', seccion:'Mantenimiento', sub:'Basura', importe:6550.0},
+  {desc:'Bomba de agua (promedio jun-jul)', seccion:'Mantenimiento', sub:'Bomba de agua', importe:925.0},
+  {desc:'CFE 5407 (promedio jun-jul)', seccion:'Mantenimiento', sub:'CFE 5407', importe:5515.5},
+  {desc:'CFE 8443 (promedio jun-jul)', seccion:'Mantenimiento', sub:'CFE 8443', importe:2435.5},
+  {desc:'Jardinería (promedio jun-jul)', seccion:'Mantenimiento', sub:'Jardinería', importe:15000.0},
+  {desc:'Ajuste contable (promedio jun-jul)', seccion:'Otros Gastos', sub:'Ajuste contable', importe:2000.0},
+  {desc:'Inversión (promedio jun-jul)', seccion:'Otros Gastos', sub:'Inversión', importe:10664.51},
+  {desc:'No es Gasto - Retornos Garantías (promedio jun-jul)', seccion:'Otros Gastos', sub:'No es Gasto - Retornos Garantías', importe:9000.0},
+  {desc:'Reparación Alberca (promedio jun-jul)', seccion:'Otros Gastos', sub:'Reparación Alberca', importe:125.0},
+  {desc:'Reparación GYM (promedio jun-jul)', seccion:'Otros Gastos', sub:'Reparación GYM', importe:3637.8},
+  {desc:'Reparación Seguridad (promedio jun-jul)', seccion:'Otros Gastos', sub:'Reparación Seguridad', importe:1189.0},
+  {desc:'Señalización (promedio jun-jul)', seccion:'Otros Gastos', sub:'Señalización', importe:672.8},
+  {desc:'Agua (promedio jun-jul)', seccion:'Seguridad y Vigilancia', sub:'Agua', importe:260.0},
+  {desc:'Internet (promedio jun-jul)', seccion:'Seguridad y Vigilancia', sub:'Internet', importe:439.5},
+  {desc:'Recarga Celular (promedio jun-jul)', seccion:'Seguridad y Vigilancia', sub:'Recarga Celular', importe:200.0},
+  {desc:'TAG (acceso vehicular) (promedio jun-jul)', seccion:'Seguridad y Vigilancia', sub:'TAG (acceso vehicular)', importe:329.5},
+  {desc:'Vigilancia (promedio jun-jul)', seccion:'Seguridad y Vigilancia', sub:'Vigilancia', importe:41760.0}
+];
+
+/* Subcategorías de "Otros Gastos" que se excluyen de las gráficas de gastos eventuales
+   porque no son gasto operativo real (pasivos que se liquidan o ajustes bancarios). */
+const EVENTUALES_EXCLUIDOS = {
+  'No es Gasto - Retornos Garantías': 'Devolución de depósitos de garantía de terraza a residentes: es la salida de efectivo de un pasivo que había entrado como ingreso (garantía) en meses anteriores, no un gasto operativo real.',
+  'Ajuste contable': 'Ajuste bancario (ver hoja "Fuente Julio 2026" del Excel): no es un gasto operativo real, es una corrección de conciliación de banco.'
+};
+
 const cxcPorUnidadJunio = [
   {unidad:'SENDERO DEL MEDITERRANEO - 109', monto:12287.50},
   {unidad:'PASEO DEL MEDITERRANEO - 169', monto:11447.50},
@@ -327,6 +377,44 @@ const cxcPorUnidadJunio = [
   {unidad:'PASEO DEL MEDITERRANEO - 165', monto:30.00},
   {unidad:'PASEO DEL MEDITERRANEO - 217', monto:7.50}
 ];
+const cxcPorUnidadJulio = [
+  {unidad:'SENDERO DEL MEDITERRANEO - 109', monto:13427.5},
+  {unidad:'PASEO DEL MEDITERRANEO - 169', monto:12587.5},
+  {unidad:'PASEO DEL MEDITERRANEO - 178', monto:6985},
+  {unidad:'PASEO DEL MEDITERRANEO - 111', monto:4350},
+  {unidad:'PASEO DEL MEDITERRANEO - 247', monto:3230.45},
+  {unidad:'PASEO DEL MEDITERRANEO - 229', monto:2229.5},
+  {unidad:'PASEO DEL MEDITERRANEO - 108', monto:1140},
+  {unidad:'PASEO DEL MEDITERRANEO - 119', monto:1140},
+  {unidad:'PASEO DEL MEDITERRANEO - 112', monto:1139.5},
+  {unidad:'PASEO DEL MEDITERRANEO - 166', monto:1135},
+  {unidad:'PASEO DEL MEDITERRANEO - 152', monto:1117.5},
+  {unidad:'PASEO DEL MEDITERRANEO - 122', monto:990},
+  {unidad:'PASEO DEL MEDITERRANEO - 201', monto:950},
+  {unidad:'PASEO DEL MEDITERRANEO - 157', monto:602.5},
+  {unidad:'PASEO DEL MEDITERRANEO - 137', monto:500},
+  {unidad:'SENDERO DEL MEDITERRANEO - 104', monto:500},
+  {unidad:'PASEO DEL MEDITERRANEO - 257', monto:270},
+  {unidad:'PASEO DEL MEDITERRANEO - 150', monto:230},
+  {unidad:'PASEO DEL MEDITERRANEO - 217', monto:197.5},
+  {unidad:'PASEO DEL MEDITERRANEO - 105', monto:190},
+  {unidad:'PASEO DEL MEDITERRANEO - 113', monto:190},
+  {unidad:'PASEO DEL MEDITERRANEO - 125', monto:190},
+  {unidad:'PASEO DEL MEDITERRANEO - 129', monto:190},
+  {unidad:'PASEO DEL MEDITERRANEO - 131', monto:190},
+  {unidad:'PASEO DEL MEDITERRANEO - 156', monto:190},
+  {unidad:'PASEO DEL MEDITERRANEO - 205', monto:190},
+  {unidad:'PASEO DEL MEDITERRANEO - 231', monto:190},
+  {unidad:'PASEO DEL MEDITERRANEO - 251', monto:190},
+  {unidad:'SENDERO DEL MEDITERRANEO - 108', monto:190},
+  {unidad:'PASEO DEL MEDITERRANEO - 120', monto:185},
+  {unidad:'PASEO DEL MEDITERRANEO - 140', monto:179.5},
+  {unidad:'PASEO DEL MEDITERRANEO - 149', monto:175},
+  {unidad:'PASEO DEL MEDITERRANEO - 136', monto:162.5},
+  {unidad:'PASEO DEL MEDITERRANEO - 135', monto:95},
+  {unidad:'PASEO DEL MEDITERRANEO - 165', monto:30}
+];
+
 const adelantadosTopJunio = [
   {unidad:'SENDERO DEL MEDITERRANEO - 113', monto:14307.50},
   {unidad:'SENDERO DEL MEDITERRANEO - 110', monto:7600.00},
@@ -334,29 +422,212 @@ const adelantadosTopJunio = [
   {unidad:'PASEO DEL MEDITERRANEO - 126', monto:2850.00},
   {unidad:'PASEO DEL MEDITERRANEO - 149', monto:965.00}
 ];
+const adelantadosTopJulio = [
+  {unidad:'SENDERO DEL MEDITERRANEO - 113', monto:13357.5},
+  {unidad:'SENDERO DEL MEDITERRANEO - 110', monto:6650},
+  {unidad:'PASEO DEL MEDITERRANEO - 168', monto:4750},
+  {unidad:'PASEO DEL MEDITERRANEO - 151', monto:2000},
+  {unidad:'PASEO DEL MEDITERRANEO - 118', monto:1900}
+];
 
-function buildMonthlyReport(containerId, suffix, opts){
+const datasetJunio = {
+  kpis: kpisJunio, ingresos: ingresosJunio, egresos: egresosJunio,
+  cxcPorUnidad: cxcPorUnidadJunio, cxcCount: 22, cxcCorteTotal: kpisJunio.cxc,
+  adelantadosTop: adelantadosTopJunio, adelCount: 47, adelCorteTotal: kpisJunio.adelantados,
+  monthLabel: 'junio 2026', cortLabel: 'Del 01 al 30 de junio 2026', corteFecha: '30-jun-2026'
+};
+const datasetJulio = {
+  kpis: kpisJulio, ingresos: ingresosJulio, egresos: egresosJulio,
+  cxcPorUnidad: cxcPorUnidadJulio, cxcCount: 35, cxcCorteTotal: kpisJulio.cxc,
+  adelantadosTop: adelantadosTopJulio, adelCount: 45, adelCorteTotal: kpisJulio.adelantados,
+  monthLabel: 'julio 2026', cortLabel: 'Del 01 al 31 de julio 2026', corteFecha: '31-jul-2026'
+};
+const datasetTodo = {
+  kpis: kpisTodo, ingresos: ingresosTodo, egresos: egresosTodo,
+  cxcPorUnidad: cxcPorUnidadJulio, cxcCount: 35, cxcCorteTotal: 55448.95,
+  adelantadosTop: adelantadosTopJulio, adelCount: 45, adelCorteTotal: 46929.65,
+  monthLabel: 'promedio junio-julio 2026', cortLabel: 'Promedio mensual — junio y julio 2026 (los 2 meses con cierre contable completo)', corteFecha: '31-jul-2026'
+};
+
+/* ============ RESUMEN GENERAL ============ */
+const historicoFinanciero = [
+  {label:'Ene-25', banco:211558.46, disponible:104198.46, cxc:41785.0},
+  {label:'Feb-25', banco:209191.62, disponible:101973.62, cxc:46814.5},
+  {label:'Mar-25', banco:207262.66, disponible:90299.44, cxc:61017.5},
+  {label:'Abr-25', banco:192759.51, disponible:76603.51, cxc:62466.0},
+  {label:'May-25', banco:194264.55, disponible:99614.55, cxc:62095.0},
+  {label:'Jun-25', banco:196972.92, disponible:88420.92, cxc:63849.0},
+  {label:'Jul-25', banco:214709.8, disponible:115987.8, cxc:60990.0},
+  {label:'Ago-25', banco:198257.6, disponible:98501.6, cxc:60203.5},
+  {label:'Sep-25', banco:202658.75, disponible:99490.75, cxc:59646.75},
+  {label:'Oct-25', banco:197706.98, disponible:95204.98, cxc:62978.0},
+  {label:'Nov-25', banco:205316.23, disponible:119656.23, cxc:59892.5},
+  {label:'Dic-25', banco:197505.13, disponible:104292, cxc:52649.5},
+  {label:'Ene-26', banco:260417, disponible:151047.04, cxc:43132.45},
+  {label:'Feb-26', banco:376961.96, disponible:279991.95, cxc:34250.45},
+  {label:'Mar-26', banco:400876.14, disponible:304111.13, cxc:34445.45},
+  {label:'Abr-26', banco:404116.66, disponible:310326.66, cxc:32754.5},
+  {label:'May-26', banco:342103.65, disponible:323779.75, cxc:52124.95},
+  {label:'Jun-26', banco:kpisJunio.banco_final, disponible:kpisJunio.disponible_real, cxc:kpisJunio.cxc},
+  {label:'Jul-26', banco:kpisJulio.banco_final, disponible:kpisJulio.disponible_real, cxc:kpisJulio.cxc}
+];
+const HITO_COMITE_IDX = 9;   // Oct-25
+const HITO_ADMIN_IDX = 17;   // Jun-26
+
+function makeHitosPlugin(items){
+  return {
+    id: 'hitos' + Math.random().toString(36).slice(2),
+    afterDatasetsDraw(chart){
+      const ctx = chart.ctx;
+      const xScale = chart.scales.x;
+      const area = chart.chartArea;
+      ctx.save();
+      items.forEach(h => {
+        const xPos = xScale.getPixelForValue(h.index);
+        ctx.strokeStyle = h.color;
+        ctx.setLineDash([5,4]);
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.moveTo(xPos, area.top + 16);
+        ctx.lineTo(xPos, area.bottom);
+        ctx.stroke();
+        ctx.setLineDash([]);
+        ctx.fillStyle = h.color;
+        ctx.font = '600 10px -apple-system, BlinkMacSystemFont, sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText(h.label, xPos, area.top + 11);
+      });
+      ctx.restore();
+    }
+  };
+}
+function pointRadii(len, hitoIdx, base){
+  const arr = new Array(len).fill(base);
+  arr[hitoIdx] = base + 4;
+  return arr;
+}
+
+(function(){
+  const el = document.getElementById('panelResumenGeneral');
+  el.innerHTML =
+    '<div class="section-label" style="margin-top:14px;">Evolución de Banco, Disponible Real y Cuentas por Cobrar (enero 2025 — julio 2026)</div>' +
+    '<div style="position:relative;height:280px;"><canvas id="chartEvolucionFinanciera"></canvas></div>' +
+    '<p class="note" style="margin-top:8px;">Las cuentas por pagar (pagos a proveedores) se llevan al corriente a partir de junio de 2026.</p>' +
+    '<div class="grid" style="margin-top:14px;">' +
+    metricCard('Cartera vencida (más reciente, 31-jul)', 55448.95, '#d03b3b') +
+    metricCard('Saldo a favor (más reciente, 31-jul)', 46929.65, '#0ca30c') +
+    metricCard('Posición neta (más reciente, 31-jul)', 8519.30) +
+    metricCard('Egresos (último cierre, julio)', kpisJulio.egresos_total) +
+    metricCard('Banco final (último cierre, julio)', kpisJulio.banco_final) +
+    metricCard('Disponible real (último cierre, julio)', kpisJulio.disponible_real) +
+    '</div>' +
+    '<p class="note" style="margin-top:12px;">Último estado de resultados cerrado: julio 2026. Último corte de cobranza disponible: 31 de julio 2026. El estatus de las 131 unidades está arriba, al inicio de la página.</p>';
+
+  new Chart(document.getElementById('chartEvolucionFinanciera'), {
+    type: 'line',
+    data: {
+      labels: historicoFinanciero.map(h => h.label),
+      datasets: [
+        { label: 'Banco', data: historicoFinanciero.map(h => h.banco),
+          borderColor: '#2a78d6', backgroundColor: '#2a78d6', tension: 0.15, borderWidth: 2, spanGaps: false,
+          pointRadius: pointRadii(historicoFinanciero.length, HITO_ADMIN_IDX, 2), pointHoverRadius: 6 },
+        { label: 'Disponible Real', data: historicoFinanciero.map(h => h.disponible),
+          borderColor: '#0ca30c', backgroundColor: '#0ca30c', tension: 0.15, borderWidth: 2, spanGaps: false,
+          pointRadius: pointRadii(historicoFinanciero.length, HITO_ADMIN_IDX, 2), pointHoverRadius: 6 },
+        { label: 'Cuentas por Cobrar', data: historicoFinanciero.map(h => h.cxc),
+          borderColor: '#d03b3b', backgroundColor: '#d03b3b', tension: 0.15, borderWidth: 2, borderDash: [5,3],
+          pointRadius: pointRadii(historicoFinanciero.length, HITO_ADMIN_IDX, 2), pointHoverRadius: 6 }
+      ]
+    },
+    plugins: [makeHitosPlugin([
+      { index: HITO_COMITE_IDX, label: 'Cambio Comité de Vigilancia', color: '#c98500' },
+      { index: HITO_ADMIN_IDX, label: 'Cambio a Administración Luna', color: '#2a78d6' }
+    ])],
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      layout: { padding: { top: 22 } },
+      plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 11 } } },
+        tooltip: { callbacks: { label: (ctx) => ctx.dataset.label + ': ' + (ctx.parsed.y == null ? 'sin datos' : fmt2(ctx.parsed.y)) } } },
+      scales: {
+        y: { ticks: { callback: (v) => fmt(v), font: { size: 11 } }, grid: { color: '#e2e0d8' } },
+        x: { ticks: { font: { size: 9 }, maxRotation: 60, minRotation: 45 }, grid: { display: false } }
+      }
+    }
+  });
+})();
+
+/* ============ TODO (promedio) ============ */
+(function(){
+  const el = document.getElementById('panelTodo');
+  const cvSerie = [52124.95, 56222.45, 55448.95];
+  const sfSerie = [30757.65, 42705.15, 46929.65];
+  const pnSerie = [21367.30, 13517.30, 8519.30];
+  const avg = (arr) => arr.reduce((a,b)=>a+b,0) / arr.length;
+  const cvProm = avg(cvSerie), sfProm = avg(sfSerie), pnProm = avg(pnSerie);
+
+  el.innerHTML =
+    '<p style="font-weight:600;margin:14px 0 2px;">Todo: promedio mensual con la información disponible</p>' +
+    '<p class="note" style="margin:0 0 14px;">Junta mayo, junio y julio 2026 (lo que se tiene de cada uno) y calcula el promedio mensual de cada indicador.</p>' +
+    '<div class="section-label" style="margin-top:0;">Cobranza — promedio de 3 cortes (mayo, junio, julio)</div>' +
+    '<div class="grid">' +
+      metricCard('Cartera vencida promedio', cvProm, '#d03b3b') +
+      metricCard('Saldo a favor promedio', sfProm, '#0ca30c') +
+      metricCard('Posición neta promedio', pnProm) +
+    '</div>' +
+    '<div class="section-label">Ingresos y egresos — promedio mensual</div>' +
+    '<div class="grid">' +
+      metricCard('Ingresos promedio mensual', kpisTodo.ingresos_total, '#0ca30c') +
+      metricCard('Egresos promedio mensual', kpisTodo.egresos_total, '#d03b3b') +
+      metricCard('Utilidad bruta promedio mensual', kpisTodo.utilidad_bruta, '#0ca30c') +
+    '</div>' +
+    '<p class="note" style="margin-top:12px;">Los promedios de cartera vencida, saldo a favor y posición neta usan los 3 cortes de cobranza (30-may, 30-jun, 31-jul 2026). Los de banco, ingresos, egresos, disponible y utilidad usan los 2 meses con cierre contable completo (junio y julio 2026).</p>' +
+    '<div style="margin-top:1.5rem;padding-top:1rem;border-top:1px solid var(--border);">' +
+    '<p class="section-label" style="margin-top:0;">Detalle completo — promedio mensual con todos los datos disponibles</p>' +
+    '<div id="panelTodoMount"></div>' +
+    '</div>';
+})();
+
+/* ============ BALANCE GENERAL ============ */
+(function(){
+  const el = document.getElementById('panelBalance');
+  const banco = kpisJulio.banco_final;
+  const cxc = kpisJulio.cxc;
+  const activos = banco + cxc;
+  const adelantados = kpisJulio.adelantados;
+  const pasivos = adelantados;
+  const patrimonio = activos - pasivos;
+  el.innerHTML =
+    '<p style="font-weight:600;margin:14px 0 2px;">Balance hasta la última actualización disponible</p>' +
+    '<p class="note" style="margin:0 0 16px;">Cada renglón usa el dato más reciente que se tiene: banco al cierre de julio 2026, cartera vencida y adelantos al corte de julio 2026.</p>' +
+    sectionBar('Activos', activos) +
+    rowLine('Banco (saldo final, cierre julio 2026)', banco, 12) +
+    rowLine('Cuentas por cobrar (cartera vencida, corte 31-jul-2026)', cxc, 12) +
+    sectionBar('Pasivos', pasivos) +
+    rowLine('Adelantados / depósitos a favor de residentes (corte 31-jul-2026)', adelantados, 12) +
+    highlightBar('(=) Patrimonio / posición neta', patrimonio) +
+    '<p class="note" style="margin-top:14px;">Patrimonio = Activos (banco + cartera vencida) − Pasivos (adelantos de residentes). No incluye activos fijos (áreas comunes, equipo) ni pasivos con proveedores que aún no se cierren.</p>';
+})();
+
+/* ============ REPORTE MENSUAL PARAMETRIZADO ============ */
+function buildMonthlyReport(containerId, suffix, data, opts){
   opts = opts || {};
   const isProm = !!opts.isPromedio;
-  const cxcValue = opts.cxcValue !== undefined ? opts.cxcValue : kpisJunio.cxc;
-  const cxcLabel = opts.cxcLabel || 'Cuentas por cobrar';
-  const adelValue = opts.adelValue !== undefined ? opts.adelValue : kpisJunio.adelantados;
-  const adelLabel = opts.adelLabel || 'Adelantados';
+  const kpis = data.kpis;
   const kpiSuffix = isProm ? ' (prom.)' : '';
   const el = document.getElementById(containerId);
   el.innerHTML =
-    (isProm ? '<p class="note" style="margin:14px 0 4px;">Cada indicador usa el promedio de los meses con datos disponibles a la fecha — ver la nota al final de cada sección.</p>' : '') +
+    (isProm ? '<p class="note" style="margin:14px 0 4px;">Cada indicador es el promedio de los meses con datos disponibles — ver la nota al final de cada sección.</p>' : '') +
     '<div class="grid" style="margin-top:' + (isProm ? '4px' : '14px') + ';">' +
-      metricCard('Banco inicial' + kpiSuffix, kpisJunio.banco_inicial) +
-      metricCard('Ingresos' + kpiSuffix, kpisJunio.ingresos_total, '#0ca30c') +
-      metricCard('Egresos' + kpiSuffix, kpisJunio.egresos_total, '#d03b3b') +
-      metricCard('Banco final' + kpiSuffix, kpisJunio.banco_final) +
-      metricCard('Disponible real' + kpiSuffix, kpisJunio.disponible_real) +
-      metricCard(cxcLabel, cxcValue, '#c98500') +
-      metricCard(adelLabel, adelValue) +
-      metricCard('Utilidad bruta' + kpiSuffix, kpisJunio.utilidad_bruta, '#0ca30c') +
+      metricCard('Banco inicial' + kpiSuffix, kpis.banco_inicial) +
+      metricCard('Ingresos' + kpiSuffix, kpis.ingresos_total, '#0ca30c') +
+      metricCard('Egresos' + kpiSuffix, kpis.egresos_total, '#d03b3b') +
+      metricCard('Banco final' + kpiSuffix, kpis.banco_final) +
+      metricCard('Disponible real' + kpiSuffix, kpis.disponible_real) +
+      metricCard('Cuentas por cobrar' + kpiSuffix, kpis.cxc, '#c98500') +
+      metricCard('Adelantados' + kpiSuffix, kpis.adelantados) +
+      metricCard('Utilidad bruta' + kpiSuffix, kpis.utilidad_bruta, '#0ca30c') +
     '</div>' +
-    (isProm ? '<p class="note" style="margin:6px 0 0;">Banco, ingresos, egresos, disponible y utilidad: promedio de 1 mes (junio 2026, único cierre contable completo). Cuentas por cobrar y adelantados: promedio de 3 cortes de cobranza (mayo, junio, julio).</p>' : '') +
+    (isProm ? '<p class="note" style="margin:6px 0 0;">Banco, ingresos, egresos, disponible y utilidad: promedio de junio y julio 2026 (los 2 cierres contables completos). Cuentas por cobrar y adelantados: promedio de 3 cortes de cobranza (mayo, junio, julio).</p>' : '') +
     '<div class="grid" style="grid-template-columns:1fr 1fr;margin-top:12px;" id="meters' + suffix + '"></div>' +
     '<div class="subtabbar" id="subtabbar' + suffix + '">' +
       '<button class="subtab-btn" data-sub="resumen">Resumen y gráficas</button>' +
@@ -381,11 +652,11 @@ function buildMonthlyReport(containerId, suffix, opts){
       '<p style="font-size:11px;color:var(--text-muted);margin:6px 0 0;">' + fmt(value) + ' de target ' + fmt(target) + '</p></div>';
   }
   document.getElementById('meters' + suffix).innerHTML =
-    meter('Disponible vs. target de fondo', kpisJunio.disponible_real, kpisJunio.target_disponible, false) +
-    meter((isProm ? 'Cartera vencida promedio' : 'Cartera vencida') + ' vs. target', cxcValue, kpisJunio.target_cxc, true);
+    meter('Disponible vs. target de fondo', kpis.disponible_real, kpis.target_disponible, false) +
+    meter((isProm ? 'Cartera vencida promedio' : 'Cartera vencida') + ' vs. target', kpis.cxc, kpis.target_cxc, true);
 
   function hbar(canvasId, items, valueKey, labelKey){
-    const sorted = [...items].sort((a,b) => b[valueKey] - a[valueKey]);
+    const sorted = [...items].filter(i => i[valueKey] > 0).sort((a,b) => b[valueKey] - a[valueKey]);
     new Chart(document.getElementById(canvasId), {
       type: 'bar',
       data: { labels: sorted.map(i => i[labelKey]), datasets: [{ data: sorted.map(i => i[valueKey]), backgroundColor: sorted.map((_,idx) => cove[idx % cove.length]), borderRadius: 4 }] },
@@ -401,20 +672,30 @@ function buildMonthlyReport(containerId, suffix, opts){
   }
 
   const seccionTotales = {};
-  egresosJunio.forEach(e => { seccionTotales[e.seccion] = (seccionTotales[e.seccion]||0) + e.importe; });
+  data.egresos.forEach(e => { seccionTotales[e.seccion] = (seccionTotales[e.seccion]||0) + e.importe; });
   const seccionItems = Object.entries(seccionTotales).map(([label,value]) => ({label,value}));
-  const otrosGastos = egresosJunio.filter(e => e.seccion === 'Otros Gastos');
+  const otrosGastos = data.egresos.filter(e => e.seccion === 'Otros Gastos');
   const otrosGastosTotal = otrosGastos.reduce((s,i)=>s+i.importe,0);
-  const RETORNO_SUB = 'No es gasto - Retorno garantías';
-  const retornoGarantias = otrosGastos.filter(e => e.sub === RETORNO_SUB).reduce((s,i)=>s+i.importe,0);
+  const eventualExcluidos = otrosGastos.filter(e => EVENTUALES_EXCLUIDOS.hasOwnProperty(e.sub) && e.importe > 0);
   const eventualTotales = {};
-  otrosGastos.filter(e => e.sub !== RETORNO_SUB).forEach(e => { eventualTotales[e.sub] = (eventualTotales[e.sub]||0) + e.importe; });
+  otrosGastos.filter(e => !EVENTUALES_EXCLUIDOS.hasOwnProperty(e.sub)).forEach(e => { eventualTotales[e.sub] = (eventualTotales[e.sub]||0) + e.importe; });
   const eventualItems = Object.entries(eventualTotales).map(([label,value]) => ({label,value}));
   const eventualTotal = eventualItems.reduce((s,i)=>s+i.value,0);
-  const inversionTotal = eventualTotales['Inversión'] || 0;
+  const topEventual = [...eventualItems].sort((a,b)=>b.value-a.value)[0];
+
+  const ingresosExcluidos = data.ingresos.filter(i => INGRESOS_EXCLUIDOS.hasOwnProperty(i.label) && i.value > 0);
+  const ingresosOperativos = data.ingresos.filter(i => !INGRESOS_EXCLUIDOS.hasOwnProperty(i.label) && i.value > 0);
+  const ingresosOperativosTotal = ingresosOperativos.reduce((s,i)=>s+i.value,0);
 
   document.getElementById('subResumen' + suffix).innerHTML =
-    '<div class="section-label">Ingresos por rubro</div><div style="position:relative;height:220px;"><canvas id="chartIngresos' + suffix + '"></canvas></div>' +
+    '<div class="section-label">Ingresos por rubro</div>' +
+    '<div class="grid" style="grid-template-columns:1.3fr 1fr;align-items:center;">' +
+      '<div style="position:relative;height:200px;"><canvas id="chartIngresos' + suffix + '"></canvas></div>' +
+      '<div><div style="position:relative;height:140px;"><canvas id="chartIngresosPie' + suffix + '"></canvas></div><div id="ingresosPieLegend' + suffix + '" style="margin-top:6px;"></div></div>' +
+    '</div>' +
+    ingresosExcluidos.map(i => '<div class="row-line" style="margin-top:8px;padding:8px 10px;background:var(--surface);border-radius:4px;">' +
+      '<span style="color:var(--text-secondary);">' + i.label.replace('*','') + ' <span class="note">(se excluye de estas gráficas: ' + INGRESOS_EXCLUIDOS[i.label] + ')</span></span>' +
+      '<span style="font-weight:600;white-space:nowrap;margin-left:10px;">' + fmt2(i.value) + '</span></div>').join('') +
     '<div class="section-label">Egresos por categoría</div>' +
     '<div class="grid" style="grid-template-columns:1.3fr 1fr;align-items:center;">' +
       '<div style="position:relative;height:160px;"><canvas id="chartEgresos' + suffix + '"></canvas></div>' +
@@ -432,22 +713,23 @@ function buildMonthlyReport(containerId, suffix, opts){
         '<div id="eventualesPieLegend' + suffix + '" style="margin-top:6px;"></div>' +
       '</div>' +
     '</div>' +
-    '<div class="row-line" style="margin-top:8px;padding:8px 10px;background:var(--surface);border-radius:4px;">' +
-      '<span style="color:var(--text-secondary);">Retorno de garantías de terraza <span class="note">(fuera de las gráficas: no es un gasto operativo, es devolución de un depósito)</span></span>' +
-      '<span style="font-weight:600;white-space:nowrap;margin-left:10px;">' + fmt2(retornoGarantias) + '</span>' +
-    '</div>' +
+    eventualExcluidos.map(e => '<div class="row-line" style="margin-top:8px;padding:8px 10px;background:var(--surface);border-radius:4px;">' +
+      '<span style="color:var(--text-secondary);">' + e.sub + ' <span class="note">(fuera de las gráficas: ' + EVENTUALES_EXCLUIDOS[e.sub] + ')</span></span>' +
+      '<span style="font-weight:600;white-space:nowrap;margin-left:10px;">' + fmt2(e.importe) + '</span></div>').join('') +
     '<div style="margin-top:1.25rem;padding-top:1rem;border-top:1px solid var(--border);">' +
     '<p class="section-label" style="margin-top:0;">Lectura para el administrador</p>' +
     '<ul style="margin:0;padding-left:18px;font-size:13px;line-height:1.7;">' +
-    '<li>El banco final calculado (' + fmt(kpisJunio.banco_final) + ') reconcilia exacto contra lo reportado oficialmente — diferencia $0.</li>' +
-    '<li>El disponible real está ' + pct((kpisJunio.disponible_real/kpisJunio.target_disponible-1)*100) + '% arriba del target de fondo (' + fmt(kpisJunio.target_disponible) + ').</li>' +
-    '<li>La ' + (isProm ? 'cartera vencida promedio' : 'cartera vencida') + ' (' + fmt(cxcValue) + ') es ' + pct(cxcValue/kpisJunio.target_cxc) + 'x el target (' + fmt(kpisJunio.target_cxc) + ').</li>' +
-    '<li>Otros Gastos representan ' + pct(otrosGastosTotal/kpisJunio.egresos_total*100) + '% del total de egresos (incluye el retorno de garantías, que no es gasto operativo). De los gastos eventuales reales (' + fmt(eventualTotal) + '), Inversión en la oficina de administración (' + fmt(inversionTotal) + ') es el mayor componente, no recurrente.</li>' +
+    '<li>El banco final calculado (' + fmt(kpis.banco_final) + ') reconcilia exacto contra lo reportado oficialmente — diferencia $0.</li>' +
+    '<li>El disponible real está ' + pct((kpis.disponible_real/kpis.target_disponible-1)*100) + '% arriba del target de fondo (' + fmt(kpis.target_disponible) + ').</li>' +
+    '<li>La ' + (isProm ? 'cartera vencida promedio' : 'cartera vencida') + ' (' + fmt(kpis.cxc) + ') es ' + pct(kpis.cxc/kpis.target_cxc) + 'x el target (' + fmt(kpis.target_cxc) + ').</li>' +
+    '<li>Otros Gastos representan ' + pct(otrosGastosTotal/kpis.egresos_total*100) + '% del total de egresos' + (eventualExcluidos.length ? ' (incluye renglones que no son gasto operativo real, ver arriba)' : '') + '. ' +
+      (topEventual ? 'De los gastos eventuales reales (' + fmt(eventualTotal) + '), "' + topEventual.label + '" (' + fmt(topEventual.value) + ') es el mayor componente.' : '') + '</li>' +
     '</ul></div>';
 
-  const seccionSorted = [...seccionItems].sort((a,b) => b.value - a.value);
-  const eventualSorted = [...eventualItems].sort((a,b) => b.value - a.value);
-  hbar('chartIngresos' + suffix, ingresosJunio, 'value', 'label');
+  const seccionSorted = [...seccionItems].filter(i=>i.value>0).sort((a,b) => b.value - a.value);
+  const eventualSorted = [...eventualItems].filter(i=>i.value>0).sort((a,b) => b.value - a.value);
+  const ingresosSorted = [...ingresosOperativos].sort((a,b) => b.value - a.value);
+  hbar('chartIngresos' + suffix, ingresosSorted, 'value', 'label');
   hbar('chartEgresos' + suffix, seccionSorted, 'value', 'label');
   hbar('chartEventuales' + suffix, eventualSorted, 'value', 'label');
 
@@ -455,12 +737,12 @@ function buildMonthlyReport(containerId, suffix, opts){
     const existing = Chart.getChart(canvasId);
     if (existing) existing.destroy();
     const labels = items.map(i => i.label);
-    const data = items.map(i => i.value);
+    const data2 = items.map(i => i.value);
     const colors = items.map((_,idx) => cove[idx % cove.length]);
-    if (extraSlice){ labels.push(extraSlice.label); data.push(extraSlice.value); colors.push('#c9c7bc'); }
+    if (extraSlice){ labels.push(extraSlice.label); data2.push(extraSlice.value); colors.push('#c9c7bc'); }
     new Chart(document.getElementById(canvasId), {
       type: 'doughnut',
-      data: { labels, datasets: [{ data, backgroundColor: colors, borderColor: '#ffffff', borderWidth: 2 }] },
+      data: { labels, datasets: [{ data: data2, backgroundColor: colors, borderColor: '#ffffff', borderWidth: 2 }] },
       options: {
         responsive: true, maintainAspectRatio: false, cutout: '55%',
         plugins: { legend: { display: false }, tooltip: { callbacks: { label: (ctx) => ctx.label + ': ' + fmt2(ctx.parsed) + ' (' + pct(ctx.parsed/denom*100) + '%)' } } }
@@ -469,15 +751,16 @@ function buildMonthlyReport(containerId, suffix, opts){
     document.getElementById(legendId).innerHTML = labels.map((l,idx) =>
       '<div class="row-line" style="align-items:center;"><span style="display:flex;align-items:center;gap:6px;color:var(--text-secondary);font-size:12px;">' +
       '<span class="dot" style="background:' + colors[idx] + ';"></span>' + l + '</span>' +
-      '<span style="font-weight:600;font-size:12px;">' + pct(data[idx]/denom*100) + '%</span></div>'
+      '<span style="font-weight:600;font-size:12px;">' + pct(data2[idx]/denom*100) + '%</span></div>'
     ).join('');
   }
 
-  buildPie('chartEgresosPie' + suffix, 'egresosPieLegend' + suffix, seccionSorted, kpisJunio.egresos_total);
+  buildPie('chartIngresosPie' + suffix, 'ingresosPieLegend' + suffix, ingresosSorted, ingresosOperativosTotal);
+  buildPie('chartEgresosPie' + suffix, 'egresosPieLegend' + suffix, seccionSorted, kpis.egresos_total);
 
   function renderEventualesPie(mode){
     if (mode === 'total') {
-      buildPie('chartEventualesPie' + suffix, 'eventualesPieLegend' + suffix, eventualSorted, kpisJunio.egresos_total, { label: 'Resto de egresos', value: kpisJunio.egresos_total - eventualTotal });
+      buildPie('chartEventualesPie' + suffix, 'eventualesPieLegend' + suffix, eventualSorted, kpis.egresos_total, { label: 'Resto de egresos', value: kpis.egresos_total - eventualTotal });
     } else {
       buildPie('chartEventualesPie' + suffix, 'eventualesPieLegend' + suffix, eventualSorted, eventualTotal);
     }
@@ -491,7 +774,7 @@ function buildMonthlyReport(containerId, suffix, opts){
   const orden = ['Seguridad y Vigilancia','Mantenimiento','Administrativos','Otros Gastos'];
   let rows = '';
   orden.forEach(sec => {
-    const items = egresosJunio.filter(e => e.seccion === sec).sort((a,b) => b.importe - a.importe);
+    const items = data.egresos.filter(e => e.seccion === sec).sort((a,b) => b.importe - a.importe);
     const subtotal = items.reduce((s,i)=>s+i.importe,0);
     rows += '<tr><td colspan="3" style="background:var(--surface);font-weight:600;">' + sec + '</td></tr>';
     items.forEach(i => {
@@ -503,13 +786,13 @@ function buildMonthlyReport(containerId, suffix, opts){
     '<table><colgroup><col style="width:45%"><col style="width:30%"><col style="width:25%"></colgroup>' +
     '<thead><tr><th>Descripción</th><th>Subcategoría</th><th style="text-align:right;">Importe</th></tr></thead>' +
     '<tbody>' + rows + '</tbody>' +
-    '<tfoot><tr><td colspan="2" style="font-weight:600;border-top:2px solid var(--border-strong);">Total egresos' + (isProm ? ' promedio mensual' : ' junio 2026') + '</td>' +
-    '<td style="font-weight:600;text-align:right;border-top:2px solid var(--border-strong);">' + fmt2(kpisJunio.egresos_total) + '</td></tr></tfoot></table>' +
-    '<p class="note" style="margin-top:10px;">30 partidas' + (isProm ? ' (detalle de junio, único mes con desglose completo; se usa como base del promedio mensual)' : '') + '. Incluye correcciones confirmadas: reflector LED x2, sillas de oficina x2; se retiraron "servicio de conexión de tarja" y el cargo sin desglose de gastos menores.</p>';
+    '<tfoot><tr><td colspan="2" style="font-weight:600;border-top:2px solid var(--border-strong);">Total egresos' + (isProm ? ' promedio mensual' : ' ' + data.monthLabel) + '</td>' +
+    '<td style="font-weight:600;text-align:right;border-top:2px solid var(--border-strong);">' + fmt2(kpis.egresos_total) + '</td></tr></tfoot></table>' +
+    '<p class="note" style="margin-top:10px;">' + data.egresos.length + ' partidas' + (isProm ? ' (promedio de las subcategorías de junio y julio 2026)' : '') + '.</p>';
 
   let egresosHtml = '';
   orden.forEach(sec => {
-    const items = egresosJunio.filter(e => e.seccion === sec);
+    const items = data.egresos.filter(e => e.seccion === sec);
     const sub = {};
     items.forEach(i => { sub[i.sub] = (sub[i.sub]||0) + i.importe; });
     const total = Object.values(sub).reduce((a,b)=>a+b,0);
@@ -517,30 +800,30 @@ function buildMonthlyReport(containerId, suffix, opts){
     Object.entries(sub).sort((a,b)=>b[1]-a[1]).forEach(([label,value]) => { egresosHtml += rowLine(label, value, 12); });
   });
   let ingresosHtml = '';
-  [...ingresosJunio].sort((a,b)=>b.value-a.value).forEach(i => { ingresosHtml += rowLine(i.label, i.value); });
+  [...data.ingresos].sort((a,b)=>b.value-a.value).forEach(i => { ingresosHtml += rowLine(i.label.replace('*',''), i.value); });
   let cxcHtml = '<table style="margin-top:8px;"><colgroup><col style="width:60%"><col style="width:40%"></colgroup>' +
     '<thead><tr><th>Unidad</th><th style="text-align:right;">Adeudo</th></tr></thead><tbody>';
-  cxcPorUnidadJunio.forEach(u => { cxcHtml += '<tr><td>' + u.unidad + '</td><td style="text-align:right;">' + fmt2(u.monto) + '</td></tr>'; });
-  cxcHtml += '</tbody><tfoot><tr><td style="font-weight:600;border-top:2px solid var(--border-strong);">Total (22 unidades' + (isProm ? ', detalle de junio' : '') + ')</td>' +
-    '<td style="font-weight:600;text-align:right;border-top:2px solid var(--border-strong);">' + fmt2(kpisJunio.cxc) + '</td></tr></tfoot></table>';
+  data.cxcPorUnidad.forEach(u => { cxcHtml += '<tr><td>' + u.unidad + '</td><td style="text-align:right;">' + fmt2(u.monto) + '</td></tr>'; });
+  cxcHtml += '</tbody><tfoot><tr><td style="font-weight:600;border-top:2px solid var(--border-strong);">Total (' + data.cxcCount + ' unidades' + (isProm ? ', corte ' + data.corteFecha : '') + ')</td>' +
+    '<td style="font-weight:600;text-align:right;border-top:2px solid var(--border-strong);">' + fmt2(data.cxcCorteTotal) + '</td></tr></tfoot></table>';
   let adelHtml = '';
-  adelantadosTopJunio.forEach(a => { adelHtml += rowLine(a.unidad, a.monto); });
+  data.adelantadosTop.forEach(a => { adelHtml += rowLine(a.unidad, a.monto); });
 
   document.getElementById('subEstado' + suffix).innerHTML =
     '<p style="font-weight:600;margin:0 0 2px;">Estado de flujo de efectivo</p>' +
-    '<p class="note" style="margin:0 0 16px;">' + (isProm ? 'Promedio mensual — construido sobre el detalle de junio 2026 (único mes con cierre contable completo)' : 'Del 01 al 30 de junio 2026') + ' — Coto 10 Puerta Natura</p>' +
-    (isProm ? '<div class="row-line" style="background:var(--surface);padding:6px 8px;border-radius:4px;margin-bottom:10px;"><span>Cuentas por cobrar — promedio 3 meses (mayo-julio)</span><span style="font-weight:600;">' + fmt2(cxcValue) + '</span></div>' +
-      '<div class="row-line" style="background:var(--surface);padding:6px 8px;border-radius:4px;margin-bottom:10px;"><span>Adelantados — promedio 3 meses (mayo-julio)</span><span style="font-weight:600;">' + fmt2(adelValue) + '</span></div>' : '') +
-    rowLine('Saldo inicial', kpisJunio.banco_inicial) +
-    sectionBar('(+) Ingresos', kpisJunio.ingresos_total) + ingresosHtml +
-    sectionBar('(-) Egresos', kpisJunio.egresos_total) + egresosHtml +
-    highlightBar('(=) Saldo en bancos', kpisJunio.banco_final) +
+    '<p class="note" style="margin:0 0 16px;">' + data.cortLabel + ' — Coto 10 Puerta Natura</p>' +
+    (isProm ? '<div class="row-line" style="background:var(--surface);padding:6px 8px;border-radius:4px;margin-bottom:6px;"><span>Cuentas por cobrar — promedio 3 meses (mayo-julio)</span><span style="font-weight:600;">' + fmt2(kpis.cxc) + '</span></div>' +
+      '<div class="row-line" style="background:var(--surface);padding:6px 8px;border-radius:4px;margin-bottom:10px;"><span>Adelantados — promedio 3 meses (mayo-julio)</span><span style="font-weight:600;">' + fmt2(kpis.adelantados) + '</span></div>' : '') +
+    rowLine('Saldo inicial', kpis.banco_inicial) +
+    sectionBar('(+) Ingresos', kpis.ingresos_total) + ingresosHtml +
+    sectionBar('(-) Egresos', kpis.egresos_total) + egresosHtml +
+    highlightBar('(=) Saldo en bancos', kpis.banco_final) +
     '<p class="section-label">Pendientes por pagar a proveedores</p>' +
-    '<p style="font-size:12px;color:var(--text-secondary);">Confirmado: $0.00. No hay pagos pendientes a proveedores al cierre de junio 2026.</p>' +
-    '<p class="section-label">Créditos diferidos / adelantados (top 5 de 47 unidades' + (isProm ? ', detalle de junio' : '') + ')</p>' +
-    adelHtml + rowLine('Total adelantados (47 unidades' + (isProm ? ', detalle de junio' : '') + ')', kpisJunio.adelantados) +
-    highlightBar('(=) Disponible a la fecha', kpisJunio.disponible_real) +
-    '<p class="section-label">Cuentas por cobrar' + (isProm ? ' — detalle de junio 2026' : ' al 30 de junio 2026') + ' (22 unidades)</p>' +
+    '<p style="font-size:12px;color:var(--text-secondary);">Confirmado: $0.00. No hay pagos pendientes a proveedores' + (isProm ? '' : (' al cierre de ' + data.monthLabel)) + '.</p>' +
+    '<p class="section-label">Créditos diferidos / adelantados (top 5 de ' + data.adelCount + ' unidades' + (isProm ? ', corte ' + data.corteFecha : '') + ')</p>' +
+    adelHtml + rowLine('Total adelantados (' + data.adelCount + ' unidades' + (isProm ? ', corte ' + data.corteFecha : '') + ')', data.adelCorteTotal) +
+    highlightBar('(=) Disponible a la fecha', kpis.disponible_real) +
+    '<p class="section-label">Cuentas por cobrar (' + data.cxcCount + ' unidades' + (isProm ? ', corte más reciente: ' + data.corteFecha : '') + ')</p>' +
     cxcHtml;
 
   const subPanels = { resumen: document.getElementById('subResumen' + suffix), detalle: document.getElementById('subDetalle' + suffix), estado: document.getElementById('subEstado' + suffix) };
@@ -552,14 +835,9 @@ function buildMonthlyReport(containerId, suffix, opts){
   subBtns.forEach(b => b.addEventListener('click', () => showSub(b.dataset.sub)));
   showSub('resumen');
 }
-buildMonthlyReport('panelJunio', 'Jun');
-buildMonthlyReport('panelTodoJunioMount', 'Todo', {
-  isPromedio: true,
-  cxcValue: 54598.78,
-  cxcLabel: 'Cuentas por cobrar (prom. 3m)',
-  adelValue: 40130.82,
-  adelLabel: 'Adelantados (prom. 3m)'
-});
+buildMonthlyReport('panelJunio', 'Jun', datasetJunio);
+buildMonthlyReport('panelJulio', 'Jul', datasetJulio);
+buildMonthlyReport('panelTodoMount', 'Todo', datasetTodo, { isPromedio: true });
 
 const monthPanels = { resumen: document.getElementById('panelResumenGeneral'), todo: document.getElementById('panelTodo'), balance: document.getElementById('panelBalance'), junio: document.getElementById('panelJunio'), julio: document.getElementById('panelJulio') };
 const monthBtns = document.querySelectorAll('#monthTabs .tab-btn');
@@ -568,7 +846,7 @@ function showMonth(name){
   monthBtns.forEach(b => b.classList.toggle('active', b.dataset.month === name));
 }
 monthBtns.forEach(b => b.addEventListener('click', () => showMonth(b.dataset.month)));
-showMonth('junio');
+showMonth('resumen');
 </script>
 </body>
 </html>
