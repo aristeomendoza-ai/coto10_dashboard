@@ -1,11 +1,4 @@
 <!DOCTYPE html>
-<script type="application/json" id="cowork-artifact-meta">
-{
-  "name": "Coto10 Estados Financieros",
-  "schemaVersion": 1,
-  "description": "Dashboard financiero de Coto 10 Puerta Natura con selector de mes (mayo–julio 2026): evolución de cartera vencida/saldo a favor, estatus de las 131 unidades, y el estado financiero completo de junio 2026 (KPIs, gráficas, detalle de egresos, estado de flujo de efectivo). Mayo y julio quedan marcados como pendiente/parcial hasta tener sus archivos de contabilidad completos."
-}
-</script>
 <html lang="es">
 <head>
 <meta charset="UTF-8">
@@ -89,19 +82,20 @@ td { padding: 5px 6px; font-size: 12px; border-bottom: 1px solid var(--border); 
 <h1>Coto 10 Mediterráneo — Puerta Natura</h1>
 <p class="subtitle">Estados financieros y cobranza. Selecciona un mes para ver su detalle.</p>
 
-<div class="section-label">Evolución de saldos por mes (Resumen de Cobranza — mayo → julio 2026)</div>
+<div class="section-label">Evolución de saldos por mes (Resumen de Cobranza — mayo → agosto 2026)</div>
 <div style="position:relative;height:220px;">
   <canvas id="chartEvolucion"></canvas>
 </div>
 
 <div class="section-label">Cartera vencida vs. target ($40,000)</div>
+<p class="note" style="margin:-6px 0 8px;">*Agosto 2026: saldo reconstruido (saldo de julio + movimiento de agosto), porque el reporte de cobranza 2608 se exportó solo con el periodo 01–31 ago.</p>
 <div style="position:relative;height:200px;">
   <canvas id="chartCarteraTarget"></canvas>
 </div>
 
 <div class="grid" style="grid-template-columns:1.1fr 1fr;margin-top:20px;align-items:start;">
   <div>
-    <div class="section-label" style="margin-top:0;">Estatus de las 131 unidades (corte 31-jul-2026)</div>
+    <div class="section-label" style="margin-top:0;">Estatus de las 131 unidades (corte 31-ago-2026)</div>
     <div style="position:relative;height:190px;">
       <canvas id="chartEstatus"></canvas>
     </div>
@@ -113,6 +107,7 @@ td { padding: 5px 6px; font-size: 12px; border-bottom: 1px solid var(--border); 
   <button class="tab-btn" data-month="resumen">Resumen general</button>
   <button class="tab-btn" data-month="todo">Todo <span class="badge badge-partial">Promedio</span></button>
   <button class="tab-btn" data-month="balance">Balance general</button>
+  <button class="tab-btn" data-month="agosto">Agosto 2026 <span class="badge badge-complete">Completo</span></button>
   <button class="tab-btn" data-month="julio">Julio 2026 <span class="badge badge-complete">Completo</span></button>
   <button class="tab-btn" data-month="junio">Junio 2026 <span class="badge badge-complete">Completo</span></button>
 </div>
@@ -122,6 +117,7 @@ td { padding: 5px 6px; font-size: 12px; border-bottom: 1px solid var(--border); 
 <div id="panelBalance"></div>
 <div id="panelJunio"></div>
 <div id="panelJulio"></div>
+<div id="panelAgosto"></div>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.0/dist/chart.umd.js" integrity="sha384-iU8HYtnGQ8Cy4zl7gbNMOhsDTTKX02BTXptVP/vqAWIaTfM7isw76iyZCsjL2eVi" crossorigin="anonymous"></script>
 <script>
@@ -141,11 +137,11 @@ const highlightBar = (label, value) => '<div class="highlight-bar"><span>' + lab
 new Chart(document.getElementById('chartEvolucion'), {
   type: 'line',
   data: {
-    labels: ['Mayo 2026 (30-may)', 'Junio 2026 (30-jun)', 'Julio 2026 (31-jul)'],
+    labels: ['Mayo 2026 (30-may)', 'Junio 2026 (30-jun)', 'Julio 2026 (31-jul)', 'Agosto 2026 (31-ago)*'],
     datasets: [
-      { label: 'Cartera vencida (adeudo)', data: [52124.95, 56222.45, 55448.95], borderColor: '#d03b3b', backgroundColor: '#d03b3b', tension: 0.15, borderWidth: 2 },
-      { label: 'Saldo a favor (adelantos)', data: [30757.65, 42705.15, 46929.65], borderColor: '#0ca30c', backgroundColor: '#0ca30c', tension: 0.15, borderWidth: 2 },
-      { label: 'Posición neta pendiente de cobro', data: [21367.30, 13517.30, 8519.30], borderColor: '#2a78d6', backgroundColor: '#2a78d6', tension: 0.15, borderWidth: 2, borderDash: [5,3] }
+      { label: 'Cartera vencida (adeudo)', data: [52124.95, 56222.45, 55448.95, 57284.45], borderColor: '#d03b3b', backgroundColor: '#d03b3b', tension: 0.15, borderWidth: 2 },
+      { label: 'Saldo a favor (adelantos)', data: [30757.65, 42705.15, 46929.65, 40023.65], borderColor: '#0ca30c', backgroundColor: '#0ca30c', tension: 0.15, borderWidth: 2 },
+      { label: 'Posición neta pendiente de cobro', data: [21367.30, 13517.30, 8519.30, 17260.80], borderColor: '#2a78d6', backgroundColor: '#2a78d6', tension: 0.15, borderWidth: 2, borderDash: [5,3] }
     ]
   },
   options: {
@@ -161,12 +157,12 @@ new Chart(document.getElementById('chartEvolucion'), {
 
 new Chart(document.getElementById('chartCarteraTarget'), {
   data: {
-    labels: ['Mayo 2026 (30-may)', 'Junio 2026 (30-jun)', 'Julio 2026 (31-jul)'],
+    labels: ['Mayo 2026 (30-may)', 'Junio 2026 (30-jun)', 'Julio 2026 (31-jul)', 'Agosto 2026 (31-ago)*'],
     datasets: [
-      { type: 'bar', label: 'Cartera vencida', data: [52124.95, 56222.45, 55448.95],
-        backgroundColor: [52124.95, 56222.45, 55448.95].map(v => v > 40000 ? '#d03b3b' : '#0ca30c'),
+      { type: 'bar', label: 'Cartera vencida', data: [52124.95, 56222.45, 55448.95, 57284.45],
+        backgroundColor: [52124.95, 56222.45, 55448.95, 57284.45].map(v => v > 40000 ? '#d03b3b' : '#0ca30c'),
         borderRadius: 4, order: 2 },
-      { type: 'line', label: 'Target ($40,000)', data: [40000, 40000, 40000],
+      { type: 'line', label: 'Target ($40,000)', data: [40000, 40000, 40000, 40000],
         borderColor: '#c98500', borderWidth: 2, borderDash: [6,4], pointRadius: 0, fill: false, order: 1 }
     ]
   },
@@ -182,9 +178,9 @@ new Chart(document.getElementById('chartCarteraTarget'), {
 });
 
 const estatusUnidades = [
-  { label: 'Al corriente', count: 51, pct: 38.9, color: '#0ca30c' },
-  { label: 'Saldo a favor', count: 45, pct: 34.4, color: '#2a78d6' },
-  { label: 'Deudor', count: 35, pct: 26.7, color: '#d03b3b' }
+  { label: 'Al corriente', count: 56, pct: 42.7, color: '#0ca30c' },
+  { label: 'Saldo a favor', count: 43, pct: 32.8, color: '#2a78d6' },
+  { label: 'Deudor', count: 32, pct: 24.4, color: '#d03b3b' }
 ];
 new Chart(document.getElementById('chartEstatus'), {
   type: 'doughnut',
@@ -202,7 +198,7 @@ document.getElementById('estatusLegend').innerHTML = estatusUnidades.map(s =>
     '<span style="display:flex;align-items:center;gap:6px;color:var(--text-secondary);"><span class="dot" style="background:' + s.color + ';"></span>' + s.label + '</span>' +
     '<span style="font-weight:600;">' + s.count + ' <span style="font-weight:400;color:var(--text-muted);font-size:11px;">(' + s.pct + '%)</span></span>' +
   '</div>'
-).join('') + '<p class="note" style="margin-top:8px;">131 unidades totales. "Saldo a favor" son residentes con adelanto neto; "Deudor" son las 35 unidades con cartera vencida activa.</p>';
+).join('') + '<p class="note" style="margin-top:8px;">131 unidades totales. "Saldo a favor" son residentes con adelanto neto; "Deudor" son las 32 unidades con cartera vencida activa.</p>';
 
 /* ============ DATOS POR MES ============ */
 
@@ -216,10 +212,15 @@ const kpisJulio = {
   banco_final: 393865.81, disponible_real: 346936.16, cxc: 55448.95,
   adelantados: 46929.65, utilidad_bruta: 26757.08, target_disponible: 300000, target_cxc: 40000
 };
+const kpisAgosto = {
+  banco_inicial: 393865.81, ingresos_total: 131908.50, egresos_total: 133155.88,
+  banco_final: 392618.43, disponible_real: 352594.78, cxc: 57284.45,
+  adelantados: 40023.65, utilidad_bruta: -1247.38, target_disponible: 300000, target_cxc: 40000
+};
 const kpisTodo = {
-  banco_inicial: 362192.66, ingresos_total: 151823.25, egresos_total: 133528.64,
-  banco_final: 380487.27, disponible_real: 335669.87, cxc: 54598.78,
-  adelantados: 40130.82, utilidad_bruta: 18294.61, target_disponible: 300000, target_cxc: 40000
+  banco_inicial: 372750.38, ingresos_total: 145185.00, egresos_total: 133404.39,
+  banco_final: 384530.99, disponible_real: 341311.51, cxc: 55270.20,
+  adelantados: 40104.03, utilidad_bruta: 11780.61, target_disponible: 300000, target_cxc: 40000
 };
 
 const ingresosJunio = [
@@ -242,16 +243,23 @@ const ingresosJulio = [
   {label:'Multas / Penalizaciones', value:1000},
   {label:'Ajuste contable (error de cuenta)', value:8000}
 ];
+const ingresosAgosto = [
+  {label:"Cuotas (mes actual)", value:101936},
+  {label:"Anticipadas", value:7000},
+  {label:"Renta (Terraza)", value:4450},
+  {label:"CV Convenio / Recuperación Cartera", value:16623},
+  {label:"No ID (Sin identificar)", value:1900}
+];
 const ingresosTodo = [
-  {label:'Cuotas (mes actual)', value:94293.25},
-  {label:'Anticipadas', value:9705.00},
-  {label:'CV Convenio / Recuperación Cartera', value:21435.00},
-  {label:'Garantía de Terraza*', value:7450.00},
-  {label:'No ID (Sin identificar)', value:3445.00},
-  {label:'Renta (Terraza)', value:8950.00},
-  {label:'Cuota Extraordinaria', value:1045.00},
-  {label:'Multas / Penalizaciones', value:1500.00},
-  {label:'Ajuste contable (error de cuenta)', value:4000.00}
+  {label:"Cuotas (mes actual)", value:96840.67},
+  {label:"Anticipadas", value:8803.33},
+  {label:"CV Convenio / Recuperación Cartera", value:19831.00},
+  {label:"Garantía de Terraza*", value:4966.67},
+  {label:"No ID (Sin identificar)", value:2930.00},
+  {label:"Renta (Terraza)", value:7450.00},
+  {label:"Cuota Extraordinaria", value:696.67},
+  {label:"Multas / Penalizaciones", value:1000.00},
+  {label:"Ajuste contable (error de cuenta)", value:2666.67}
 ];
 
 /* Rubros de ingresos que se excluyen de las gráficas de "ingresos operativos"
@@ -322,28 +330,51 @@ const egresosJulio = [
   {desc:'Error de cuenta devolución', seccion:'Otros Gastos', sub:'Ajuste contable', importe:4000}
 ];
 
+const egresosAgosto = [
+  {desc:"Internet", seccion:"Seguridad y Vigilancia", sub:"Internet", importe:439},
+  {desc:"Vigilancia 1Q", seccion:"Seguridad y Vigilancia", sub:"Vigilancia", importe:20880},
+  {desc:"Servicio de Administración", seccion:"Administrativos", sub:"Administración", importe:19659},
+  {desc:"Cambio de arena", seccion:"Otros Gastos", sub:"Reparación Alberca", importe:3000},
+  {desc:"CFE servicio:929200808443", seccion:"Mantenimiento", sub:"CFE 8443", importe:4858},
+  {desc:"CFE servicio:929200705407", seccion:"Mantenimiento", sub:"CFE 5407", importe:10929},
+  {desc:"Reparación de portón", seccion:"Otros Gastos", sub:"Reparación Seguridad", importe:2088},
+  {desc:"Cambio de fuente de poder cámaras", seccion:"Otros Gastos", sub:"Reparación Seguridad", importe:3610},
+  {desc:"Instalación de Mosquiteros en GYM", seccion:"Otros Gastos", sub:"Reparación GYM", importe:2088},
+  {desc:"Fumigación", seccion:"Mantenimiento", sub:"Fumigación", importe:2204},
+  {desc:"Servicio de revisión de bomba", seccion:"Otros Gastos", sub:"Reparación Alberca", importe:573.75},
+  {desc:"Recolección de basura", seccion:"Mantenimiento", sub:"Basura", importe:6550},
+  {desc:"Mantenimiento alberca", seccion:"Mantenimiento", sub:"Alberca", importe:6958.44},
+  {desc:"Mantenimiento de áreas verdes", seccion:"Mantenimiento", sub:"Jardinería", importe:14000},
+  {desc:"Vigilancia 2Q", seccion:"Seguridad y Vigilancia", sub:"Vigilancia", importe:20880},
+  {desc:"Gastos menores", seccion:"Otros Gastos", sub:"Gastos menores (sin desglose)", importe:1394.7},
+  {desc:"Reparación Puerta GYM", seccion:"Otros Gastos", sub:"Reparación GYM", importe:1044},
+  {desc:"Devolución de evento", seccion:"Otros Gastos", sub:"No es Gasto - Retornos Garantías", importe:8000},
+  {desc:"Error de cuenta devolución de julio", seccion:"Otros Gastos", sub:"Ajuste contable", importe:4000}
+];
 const egresosTodo = [
-  {desc:'Administración (promedio jun-jul)', seccion:'Administrativos', sub:'Administración', importe:19654.5},
-  {desc:'ISR (promedio jun-jul)', seccion:'Administrativos', sub:'ISR', importe:4763.14},
-  {desc:'Alberca (promedio jun-jul)', seccion:'Mantenimiento', sub:'Alberca', importe:6958.44},
-  {desc:'Artículos Limpieza (promedio jun-jul)', seccion:'Mantenimiento', sub:'Artículos Limpieza', importe:1448.45},
-  {desc:'Basura (promedio jun-jul)', seccion:'Mantenimiento', sub:'Basura', importe:6550.0},
-  {desc:'Bomba de agua (promedio jun-jul)', seccion:'Mantenimiento', sub:'Bomba de agua', importe:925.0},
-  {desc:'CFE 5407 (promedio jun-jul)', seccion:'Mantenimiento', sub:'CFE 5407', importe:5515.5},
-  {desc:'CFE 8443 (promedio jun-jul)', seccion:'Mantenimiento', sub:'CFE 8443', importe:2435.5},
-  {desc:'Jardinería (promedio jun-jul)', seccion:'Mantenimiento', sub:'Jardinería', importe:15000.0},
-  {desc:'Ajuste contable (promedio jun-jul)', seccion:'Otros Gastos', sub:'Ajuste contable', importe:2000.0},
-  {desc:'Inversión (promedio jun-jul)', seccion:'Otros Gastos', sub:'Inversión', importe:10664.51},
-  {desc:'No es Gasto - Retornos Garantías (promedio jun-jul)', seccion:'Otros Gastos', sub:'No es Gasto - Retornos Garantías', importe:9000.0},
-  {desc:'Reparación Alberca (promedio jun-jul)', seccion:'Otros Gastos', sub:'Reparación Alberca', importe:125.0},
-  {desc:'Reparación GYM (promedio jun-jul)', seccion:'Otros Gastos', sub:'Reparación GYM', importe:3637.8},
-  {desc:'Reparación Seguridad (promedio jun-jul)', seccion:'Otros Gastos', sub:'Reparación Seguridad', importe:1189.0},
-  {desc:'Señalización (promedio jun-jul)', seccion:'Otros Gastos', sub:'Señalización', importe:672.8},
-  {desc:'Agua (promedio jun-jul)', seccion:'Seguridad y Vigilancia', sub:'Agua', importe:260.0},
-  {desc:'Internet (promedio jun-jul)', seccion:'Seguridad y Vigilancia', sub:'Internet', importe:439.5},
-  {desc:'Recarga Celular (promedio jun-jul)', seccion:'Seguridad y Vigilancia', sub:'Recarga Celular', importe:200.0},
-  {desc:'TAG (acceso vehicular) (promedio jun-jul)', seccion:'Seguridad y Vigilancia', sub:'TAG (acceso vehicular)', importe:329.5},
-  {desc:'Vigilancia (promedio jun-jul)', seccion:'Seguridad y Vigilancia', sub:'Vigilancia', importe:41760.0}
+  {desc:"Administración (promedio jun-ago)", seccion:"Administrativos", sub:"Administración", importe:19656.00},
+  {desc:"ISR (promedio jun-ago)", seccion:"Administrativos", sub:"ISR", importe:3175.43},
+  {desc:"Alberca (promedio jun-ago)", seccion:"Mantenimiento", sub:"Alberca", importe:6958.44},
+  {desc:"Artículos Limpieza (promedio jun-ago)", seccion:"Mantenimiento", sub:"Artículos Limpieza", importe:965.64},
+  {desc:"Basura (promedio jun-ago)", seccion:"Mantenimiento", sub:"Basura", importe:6550.00},
+  {desc:"Bomba de agua (promedio jun-ago)", seccion:"Mantenimiento", sub:"Bomba de agua", importe:616.67},
+  {desc:"CFE 5407 (promedio jun-ago)", seccion:"Mantenimiento", sub:"CFE 5407", importe:7320.00},
+  {desc:"CFE 8443 (promedio jun-ago)", seccion:"Mantenimiento", sub:"CFE 8443", importe:3243.00},
+  {desc:"Fumigación (promedio jun-ago)", seccion:"Mantenimiento", sub:"Fumigación", importe:734.67},
+  {desc:"Jardinería (promedio jun-ago)", seccion:"Mantenimiento", sub:"Jardinería", importe:14666.66},
+  {desc:"Ajuste contable (promedio jun-ago)", seccion:"Otros Gastos", sub:"Ajuste contable", importe:2666.67},
+  {desc:"Gastos menores (sin desglose) (promedio jun-ago)", seccion:"Otros Gastos", sub:"Gastos menores (sin desglose)", importe:464.90},
+  {desc:"Inversión (promedio jun-ago)", seccion:"Otros Gastos", sub:"Inversión", importe:7109.67},
+  {desc:"No es Gasto - Retornos Garantías (promedio jun-ago)", seccion:"Otros Gastos", sub:"No es Gasto - Retornos Garantías", importe:8666.67},
+  {desc:"Reparación Alberca (promedio jun-ago)", seccion:"Otros Gastos", sub:"Reparación Alberca", importe:1274.58},
+  {desc:"Reparación GYM (promedio jun-ago)", seccion:"Otros Gastos", sub:"Reparación GYM", importe:3469.20},
+  {desc:"Reparación Seguridad (promedio jun-ago)", seccion:"Otros Gastos", sub:"Reparación Seguridad", importe:2692.00},
+  {desc:"Señalización (promedio jun-ago)", seccion:"Otros Gastos", sub:"Señalización", importe:448.53},
+  {desc:"Agua (promedio jun-ago)", seccion:"Seguridad y Vigilancia", sub:"Agua", importe:173.33},
+  {desc:"Internet (promedio jun-ago)", seccion:"Seguridad y Vigilancia", sub:"Internet", importe:439.33},
+  {desc:"Recarga Celular (promedio jun-ago)", seccion:"Seguridad y Vigilancia", sub:"Recarga Celular", importe:133.33},
+  {desc:"TAG (acceso vehicular) (promedio jun-ago)", seccion:"Seguridad y Vigilancia", sub:"TAG (acceso vehicular)", importe:219.67},
+  {desc:"Vigilancia (promedio jun-ago)", seccion:"Seguridad y Vigilancia", sub:"Vigilancia", importe:41760.00}
 ];
 
 /* Subcategorías de "Otros Gastos" que se excluyen de las gráficas de gastos eventuales
@@ -415,6 +446,48 @@ const cxcPorUnidadJulio = [
   {unidad:'PASEO DEL MEDITERRANEO - 165', monto:30}
 ];
 
+const cxcPorUnidadAgosto = [
+  {unidad:"SENDERO DEL MEDITERRANEO - 109", monto:14567.5},
+  {unidad:"PASEO DEL MEDITERRANEO - 169", monto:13727.5},
+  {unidad:"PASEO DEL MEDITERRANEO - 178", monto:8125},
+  {unidad:"PASEO DEL MEDITERRANEO - 111", monto:5490},
+  {unidad:"PASEO DEL MEDITERRANEO - 247", monto:4370.45},
+  {unidad:"PASEO DEL MEDITERRANEO - 166", monto:2275},
+  {unidad:"PASEO DEL MEDITERRANEO - 119", monto:1140},
+  {unidad:"SENDERO DEL MEDITERRANEO - 103", monto:1139.5},
+  {unidad:"SENDERO DEL MEDITERRANEO - 102", monto:897.5},
+  {unidad:"PASEO DEL MEDITERRANEO - 157", monto:602.5},
+  {unidad:"PASEO DEL MEDITERRANEO - 150", monto:420},
+  {unidad:"PASEO DEL MEDITERRANEO - 205", monto:380},
+  {unidad:"PASEO DEL MEDITERRANEO - 251", monto:380},
+  {unidad:"PASEO DEL MEDITERRANEO - 120", monto:375},
+  {unidad:"PASEO DEL MEDITERRANEO - 140", monto:369.5},
+  {unidad:"PASEO DEL MEDITERRANEO - 152", monto:307.5},
+  {unidad:"PASEO DEL MEDITERRANEO - 257", monto:270},
+  {unidad:"PASEO DEL MEDITERRANEO - 217", monto:197.5},
+  {unidad:"PASEO DEL MEDITERRANEO - 109", monto:190},
+  {unidad:"PASEO DEL MEDITERRANEO - 113", monto:190},
+  {unidad:"PASEO DEL MEDITERRANEO - 125", monto:190},
+  {unidad:"PASEO DEL MEDITERRANEO - 129", monto:190},
+  {unidad:"PASEO DEL MEDITERRANEO - 131", monto:190},
+  {unidad:"PASEO DEL MEDITERRANEO - 143", monto:190},
+  {unidad:"PASEO DEL MEDITERRANEO - 156", monto:190},
+  {unidad:"PASEO DEL MEDITERRANEO - 189", monto:190},
+  {unidad:"PASEO DEL MEDITERRANEO - 231", monto:190},
+  {unidad:"SENDERO DEL MEDITERRANEO - 108", monto:190},
+  {unidad:"PASEO DEL MEDITERRANEO - 149", monto:175},
+  {unidad:"PASEO DEL MEDITERRANEO - 135", monto:95},
+  {unidad:"PASEO DEL MEDITERRANEO - 137", monto:50},
+  {unidad:"PASEO DEL MEDITERRANEO - 165", monto:30}
+];
+
+const adelantadosTopAgosto = [
+  {unidad:"SENDERO DEL MEDITERRANEO - 113", monto:12407.5},
+  {unidad:"SENDERO DEL MEDITERRANEO - 110", monto:5700},
+  {unidad:"PASEO DEL MEDITERRANEO - 168", monto:3800},
+  {unidad:"PASEO DEL MEDITERRANEO - 159", monto:1900},
+  {unidad:"PASEO DEL MEDITERRANEO - 162", monto:1900}
+];
 const adelantadosTopJunio = [
   {unidad:'SENDERO DEL MEDITERRANEO - 113', monto:14307.50},
   {unidad:'SENDERO DEL MEDITERRANEO - 110', monto:7600.00},
@@ -442,11 +515,17 @@ const datasetJulio = {
   adelantadosTop: adelantadosTopJulio, adelCount: 45, adelCorteTotal: kpisJulio.adelantados,
   monthLabel: 'julio 2026', cortLabel: 'Del 01 al 31 de julio 2026', corteFecha: '31-jul-2026'
 };
+const datasetAgosto = {
+  kpis: kpisAgosto, ingresos: ingresosAgosto, egresos: egresosAgosto,
+  cxcPorUnidad: cxcPorUnidadAgosto, cxcCount: 32, cxcCorteTotal: kpisAgosto.cxc,
+  adelantadosTop: adelantadosTopAgosto, adelCount: 43, adelCorteTotal: kpisAgosto.adelantados,
+  monthLabel: 'agosto 2026', cortLabel: 'Del 01 al 31 de agosto 2026', corteFecha: '31-ago-2026'
+};
 const datasetTodo = {
   kpis: kpisTodo, ingresos: ingresosTodo, egresos: egresosTodo,
-  cxcPorUnidad: cxcPorUnidadJulio, cxcCount: 35, cxcCorteTotal: 55448.95,
-  adelantadosTop: adelantadosTopJulio, adelCount: 45, adelCorteTotal: 46929.65,
-  monthLabel: 'promedio junio-julio 2026', cortLabel: 'Promedio mensual — junio y julio 2026 (los 2 meses con cierre contable completo)', corteFecha: '31-jul-2026'
+  cxcPorUnidad: cxcPorUnidadAgosto, cxcCount: 32, cxcCorteTotal: 57284.45,
+  adelantadosTop: adelantadosTopAgosto, adelCount: 43, adelCorteTotal: 40023.65,
+  monthLabel: 'promedio junio-agosto 2026', cortLabel: 'Promedio mensual — junio, julio y agosto 2026 (los 3 meses con cierre contable completo)', corteFecha: '31-ago-2026'
 };
 
 /* ============ RESUMEN GENERAL ============ */
@@ -469,7 +548,8 @@ const historicoFinanciero = [
   {label:'Abr-26', banco:404116.66, disponible:310326.66, porpagar:72890.0},
   {label:'May-26', banco:342103.65, disponible:323779.75, porpagar:1223.9},
   {label:'Jun-26', banco:kpisJunio.banco_final, disponible:kpisJunio.disponible_real, porpagar:0},
-  {label:'Jul-26', banco:kpisJulio.banco_final, disponible:kpisJulio.disponible_real, porpagar:0}
+  {label:'Jul-26', banco:kpisJulio.banco_final, disponible:kpisJulio.disponible_real, porpagar:0},
+  {label:'Ago-26', banco:kpisAgosto.banco_final, disponible:kpisAgosto.disponible_real, porpagar:0}
 ];
 const HITO_COMITE_IDX = 9;   // Oct-25
 const HITO_ADMIN_IDX = 17;   // Jun-26
@@ -510,18 +590,18 @@ function pointRadii(len, hitoIdx, base){
 (function(){
   const el = document.getElementById('panelResumenGeneral');
   el.innerHTML =
-    '<div class="section-label" style="margin-top:14px;">Evolución de Banco, Disponible Real y Cuentas por Pagar (enero 2025 — julio 2026)</div>' +
+    '<div class="section-label" style="margin-top:14px;">Evolución de Banco, Disponible Real y Cuentas por Pagar (enero 2025 — agosto 2026)</div>' +
     '<div style="position:relative;height:280px;"><canvas id="chartEvolucionFinanciera"></canvas></div>' +
     '<p class="note" style="margin-top:8px;">Las cuentas por pagar (pagos a proveedores) se llevan al corriente a partir de junio de 2026.</p>' +
     '<div class="grid" style="margin-top:14px;">' +
-    metricCard('Cartera vencida (más reciente, 31-jul)', 55448.95, '#d03b3b') +
-    metricCard('Saldo a favor (más reciente, 31-jul)', 46929.65, '#0ca30c') +
-    metricCard('Posición neta (más reciente, 31-jul)', 8519.30) +
-    metricCard('Egresos (último cierre, julio)', kpisJulio.egresos_total) +
-    metricCard('Banco final (último cierre, julio)', kpisJulio.banco_final) +
-    metricCard('Disponible real (último cierre, julio)', kpisJulio.disponible_real) +
+    metricCard('Cartera vencida (más reciente, 31-ago)', kpisAgosto.cxc, '#d03b3b') +
+    metricCard('Saldo a favor (más reciente, 31-ago)', kpisAgosto.adelantados, '#0ca30c') +
+    metricCard('Posición neta (más reciente, 31-ago)', kpisAgosto.cxc - kpisAgosto.adelantados) +
+    metricCard('Egresos (último cierre, agosto)', kpisAgosto.egresos_total) +
+    metricCard('Banco final (último cierre, agosto)', kpisAgosto.banco_final) +
+    metricCard('Disponible real (último cierre, agosto)', kpisAgosto.disponible_real) +
     '</div>' +
-    '<p class="note" style="margin-top:12px;">Último estado de resultados cerrado: julio 2026. Último corte de cobranza disponible: 31 de julio 2026. El estatus de las 131 unidades está arriba, al inicio de la página.</p>';
+    '<p class="note" style="margin-top:12px;">Último estado de resultados cerrado: agosto 2026. Último corte de cobranza disponible: 31 de agosto 2026 (saldos reconstruidos a partir del movimiento del mes). El estatus de las 131 unidades está arriba, al inicio de la página.</p>';
 
   new Chart(document.getElementById('chartEvolucionFinanciera'), {
     type: 'line',
@@ -559,16 +639,16 @@ function pointRadii(len, hitoIdx, base){
 /* ============ TODO (promedio) ============ */
 (function(){
   const el = document.getElementById('panelTodo');
-  const cvSerie = [52124.95, 56222.45, 55448.95];
-  const sfSerie = [30757.65, 42705.15, 46929.65];
-  const pnSerie = [21367.30, 13517.30, 8519.30];
+  const cvSerie = [52124.95, 56222.45, 55448.95, 57284.45];
+  const sfSerie = [30757.65, 42705.15, 46929.65, 40023.65];
+  const pnSerie = [21367.30, 13517.30, 8519.30, 17260.80];
   const avg = (arr) => arr.reduce((a,b)=>a+b,0) / arr.length;
   const cvProm = avg(cvSerie), sfProm = avg(sfSerie), pnProm = avg(pnSerie);
 
   el.innerHTML =
     '<p style="font-weight:600;margin:14px 0 2px;">Todo: promedio mensual con la información disponible</p>' +
-    '<p class="note" style="margin:0 0 14px;">Junta mayo, junio y julio 2026 (lo que se tiene de cada uno) y calcula el promedio mensual de cada indicador.</p>' +
-    '<div class="section-label" style="margin-top:0;">Cobranza — promedio de 3 cortes (mayo, junio, julio)</div>' +
+    '<p class="note" style="margin:0 0 14px;">Junta mayo, junio, julio y agosto 2026 (lo que se tiene de cada uno) y calcula el promedio mensual de cada indicador.</p>' +
+    '<div class="section-label" style="margin-top:0;">Cobranza — promedio de 4 cortes (mayo, junio, julio, agosto)</div>' +
     '<div class="grid">' +
       metricCard('Cartera vencida promedio', cvProm, '#d03b3b') +
       metricCard('Saldo a favor promedio', sfProm, '#0ca30c') +
@@ -580,7 +660,7 @@ function pointRadii(len, hitoIdx, base){
       metricCard('Egresos promedio mensual', kpisTodo.egresos_total, '#d03b3b') +
       metricCard('Utilidad bruta promedio mensual', kpisTodo.utilidad_bruta, '#0ca30c') +
     '</div>' +
-    '<p class="note" style="margin-top:12px;">Los promedios de cartera vencida, saldo a favor y posición neta usan los 3 cortes de cobranza (30-may, 30-jun, 31-jul 2026). Los de banco, ingresos, egresos, disponible y utilidad usan los 2 meses con cierre contable completo (junio y julio 2026).</p>' +
+    '<p class="note" style="margin-top:12px;">Los promedios de cartera vencida, saldo a favor y posición neta usan los 4 cortes de cobranza (30-may, 30-jun, 31-jul, 31-ago 2026). Los de banco, ingresos, egresos, disponible y utilidad usan los 3 meses con cierre contable completo (junio, julio y agosto 2026).</p>' +
     '<div style="margin-top:1.5rem;padding-top:1rem;border-top:1px solid var(--border);">' +
     '<p class="section-label" style="margin-top:0;">Detalle completo — promedio mensual con todos los datos disponibles</p>' +
     '<div id="panelTodoMount"></div>' +
@@ -590,20 +670,20 @@ function pointRadii(len, hitoIdx, base){
 /* ============ BALANCE GENERAL ============ */
 (function(){
   const el = document.getElementById('panelBalance');
-  const banco = kpisJulio.banco_final;
-  const cxc = kpisJulio.cxc;
+  const banco = kpisAgosto.banco_final;
+  const cxc = kpisAgosto.cxc;
   const activos = banco + cxc;
-  const adelantados = kpisJulio.adelantados;
+  const adelantados = kpisAgosto.adelantados;
   const pasivos = adelantados;
   const patrimonio = activos - pasivos;
   el.innerHTML =
     '<p style="font-weight:600;margin:14px 0 2px;">Balance hasta la última actualización disponible</p>' +
-    '<p class="note" style="margin:0 0 16px;">Cada renglón usa el dato más reciente que se tiene: banco al cierre de julio 2026, cartera vencida y adelantos al corte de julio 2026.</p>' +
+    '<p class="note" style="margin:0 0 16px;">Cada renglón usa el dato más reciente que se tiene: banco al cierre de agosto 2026, cartera vencida y adelantos al corte de agosto 2026.</p>' +
     sectionBar('Activos', activos) +
-    rowLine('Banco (saldo final, cierre julio 2026)', banco, 12) +
-    rowLine('Cuentas por cobrar (cartera vencida, corte 31-jul-2026)', cxc, 12) +
+    rowLine('Banco (saldo final, cierre agosto 2026)', banco, 12) +
+    rowLine('Cuentas por cobrar (cartera vencida, corte 31-ago-2026)', cxc, 12) +
     sectionBar('Pasivos', pasivos) +
-    rowLine('Adelantados / depósitos a favor de residentes (corte 31-jul-2026)', adelantados, 12) +
+    rowLine('Adelantados / depósitos a favor de residentes (corte 31-ago-2026)', adelantados, 12) +
     highlightBar('(=) Patrimonio / posición neta', patrimonio) +
     '<p class="note" style="margin-top:14px;">Patrimonio = Activos (banco + cartera vencida) − Pasivos (adelantos de residentes). No incluye activos fijos (áreas comunes, equipo) ni pasivos con proveedores que aún no se cierren.</p>';
 })();
@@ -627,7 +707,7 @@ function buildMonthlyReport(containerId, suffix, data, opts){
       metricCard('Adelantados' + kpiSuffix, kpis.adelantados) +
       metricCard('Utilidad bruta' + kpiSuffix, kpis.utilidad_bruta, '#0ca30c') +
     '</div>' +
-    (isProm ? '<p class="note" style="margin:6px 0 0;">Banco, ingresos, egresos, disponible y utilidad: promedio de junio y julio 2026 (los 2 cierres contables completos). Cuentas por cobrar y adelantados: promedio de 3 cortes de cobranza (mayo, junio, julio).</p>' : '') +
+    (isProm ? '<p class="note" style="margin:6px 0 0;">Banco, ingresos, egresos, disponible y utilidad: promedio de junio, julio y agosto 2026 (los 3 cierres contables completos). Cuentas por cobrar y adelantados: promedio de 4 cortes de cobranza (mayo, junio, julio, agosto).</p>' : '') +
     '<div class="grid" style="grid-template-columns:1fr 1fr;margin-top:12px;" id="meters' + suffix + '"></div>' +
     '<div class="subtabbar" id="subtabbar' + suffix + '">' +
       '<button class="subtab-btn" data-sub="resumen">Resumen y gráficas</button>' +
@@ -788,7 +868,7 @@ function buildMonthlyReport(containerId, suffix, data, opts){
     '<tbody>' + rows + '</tbody>' +
     '<tfoot><tr><td colspan="2" style="font-weight:600;border-top:2px solid var(--border-strong);">Total egresos' + (isProm ? ' promedio mensual' : ' ' + data.monthLabel) + '</td>' +
     '<td style="font-weight:600;text-align:right;border-top:2px solid var(--border-strong);">' + fmt2(kpis.egresos_total) + '</td></tr></tfoot></table>' +
-    '<p class="note" style="margin-top:10px;">' + data.egresos.length + ' partidas' + (isProm ? ' (promedio de las subcategorías de junio y julio 2026)' : '') + '.</p>';
+    '<p class="note" style="margin-top:10px;">' + data.egresos.length + ' partidas' + (isProm ? ' (promedio de las subcategorías de junio, julio y agosto 2026)' : '') + '.</p>';
 
   let egresosHtml = '';
   orden.forEach(sec => {
@@ -812,8 +892,8 @@ function buildMonthlyReport(containerId, suffix, data, opts){
   document.getElementById('subEstado' + suffix).innerHTML =
     '<p style="font-weight:600;margin:0 0 2px;">Estado de flujo de efectivo</p>' +
     '<p class="note" style="margin:0 0 16px;">' + data.cortLabel + ' — Coto 10 Puerta Natura</p>' +
-    (isProm ? '<div class="row-line" style="background:var(--surface);padding:6px 8px;border-radius:4px;margin-bottom:6px;"><span>Cuentas por cobrar — promedio 3 meses (mayo-julio)</span><span style="font-weight:600;">' + fmt2(kpis.cxc) + '</span></div>' +
-      '<div class="row-line" style="background:var(--surface);padding:6px 8px;border-radius:4px;margin-bottom:10px;"><span>Adelantados — promedio 3 meses (mayo-julio)</span><span style="font-weight:600;">' + fmt2(kpis.adelantados) + '</span></div>' : '') +
+    (isProm ? '<div class="row-line" style="background:var(--surface);padding:6px 8px;border-radius:4px;margin-bottom:6px;"><span>Cuentas por cobrar — promedio 4 cortes (mayo-agosto)</span><span style="font-weight:600;">' + fmt2(kpis.cxc) + '</span></div>' +
+      '<div class="row-line" style="background:var(--surface);padding:6px 8px;border-radius:4px;margin-bottom:10px;"><span>Adelantados — promedio 4 cortes (mayo-agosto)</span><span style="font-weight:600;">' + fmt2(kpis.adelantados) + '</span></div>' : '') +
     rowLine('Saldo inicial', kpis.banco_inicial) +
     sectionBar('(+) Ingresos', kpis.ingresos_total) + ingresosHtml +
     sectionBar('(-) Egresos', kpis.egresos_total) + egresosHtml +
@@ -837,9 +917,10 @@ function buildMonthlyReport(containerId, suffix, data, opts){
 }
 buildMonthlyReport('panelJunio', 'Jun', datasetJunio);
 buildMonthlyReport('panelJulio', 'Jul', datasetJulio);
+buildMonthlyReport('panelAgosto', 'Ago', datasetAgosto);
 buildMonthlyReport('panelTodoMount', 'Todo', datasetTodo, { isPromedio: true });
 
-const monthPanels = { resumen: document.getElementById('panelResumenGeneral'), todo: document.getElementById('panelTodo'), balance: document.getElementById('panelBalance'), junio: document.getElementById('panelJunio'), julio: document.getElementById('panelJulio') };
+const monthPanels = { resumen: document.getElementById('panelResumenGeneral'), todo: document.getElementById('panelTodo'), balance: document.getElementById('panelBalance'), junio: document.getElementById('panelJunio'), julio: document.getElementById('panelJulio'), agosto: document.getElementById('panelAgosto') };
 const monthBtns = document.querySelectorAll('#monthTabs .tab-btn');
 function showMonth(name){
   Object.keys(monthPanels).forEach(k => monthPanels[k].style.display = (k === name) ? '' : 'none');
